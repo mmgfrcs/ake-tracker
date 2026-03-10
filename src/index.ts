@@ -5,6 +5,7 @@ import Alpine from 'alpinejs'
 import icon from './assets/icon.png'
 import type { AKEGachaRecord } from './models/record';
 import type {AKECharacterHistory, AKEWeaponHistory} from "./models/history.ts";
+import '@knadh/oat/oat.min.js'
 const link = document.querySelector("link[rel~='icon']");
 if (link) (link as HTMLLinkElement).href = icon;
 const applink = document.querySelector("link[rel~='apple-touch-icon']");
@@ -67,9 +68,15 @@ Alpine.data("pulldata", () => ({
       this.pulls.charPools = data.characterPools
       this.calculateStats()
       console.log("Load success")
-      // Delay loading oat js until DOM is ready
-      //@ts-ignore
-      this.$nextTick(() => import('@knadh/oat/oat.min.js'))
+      
+      this.$nextTick(() => {
+        const tabEl = document.getElementsByTagName('ot-tabs')
+        console.log("ot-tabs: Reinitializing")
+        for (let i = 0; i < tabEl.length; i++) {
+          //@ts-ignore init() exists
+          tabEl.item(i)?.init();
+        }
+      })
     } catch(e) {
       console.error(e);
       alert("Error loading data. Refresh to try again.")
