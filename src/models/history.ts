@@ -1,5 +1,4 @@
 export interface AKECharacterHistory {
-    icon: string
     id: string
     name: string
     poolId: string
@@ -9,4 +8,4 @@ export interface AKECharacterHistory {
     seqId: number
 }
 
-export type AKEWeaponHistory = Omit<AKECharacterHistory, "icon"> & {type: string}
+export type AKEWeaponHistory = AKECharacterHistory & {type: string}
