@@ -1,0 +1,258 @@
+import '@knadh/oat/oat.min.css';
+import './index.css'
+import * as idb from 'idb'
+import Alpine from 'alpinejs'
+import icon from './assets/icon.png'
+import type { AKEGachaRecord } from './models/record';
+import type {AKECharacterHistory, AKEWeaponHistory} from "./models/history.ts";
+const link = document.querySelector("link[rel~='icon']");
+if (link) (link as HTMLLinkElement).href = icon;
+const applink = document.querySelector("link[rel~='apple-touch-icon']");
+if (applink) (link as HTMLLinkElement).href = icon;
+
+const iconImg = document.querySelector(".icon");
+if (iconImg) (iconImg as HTMLImageElement).src = icon;
+
+
+let db: idb.IDBPDatabase;
+
+//@ts-ignore
+window.Alpine = Alpine
+
+Alpine.data("pulldata", () => ({
+  async initDb() {
+    try {
+      // Let us open our database
+      db = await idb.openDB("akeTracker", 2, {
+        upgrade(db) {
+          if (!db.objectStoreNames.contains("assets"))
+            db.createObjectStore("assets", {
+              keyPath: "id"
+            })
+
+          if (!db.objectStoreNames.contains("characters")) {
+            const chrstore = db.createObjectStore("characters", {
+              keyPath: "seqId"
+            })
+
+            chrstore.createIndex('name', 'name');
+            chrstore.createIndex('pulledAt', 'pulledAt');
+          }
+
+          if (!db.objectStoreNames.contains("weapons")) {
+            const wepstore = db.createObjectStore("weapons", {
+              keyPath: "seqId"
+            })
+
+            wepstore.createIndex('name', 'name');
+            wepstore.createIndex('pulledAt', 'pulledAt');
+          }
+
+        }
+      });
+
+      const assetMod = import.meta.glob("/src/assets/chars/*.png", {import: "default"})
+
+      for(let assetPth in assetMod) {
+        const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
+        if (!name) continue;
+
+        await db.put("assets", {id: name[0], value: await assetMod[assetPth]()})
+      }
+      
+      const data = await loadData()
+      this.pulls.weapons = data.weapons
+      this.pulls.chars = data.characters
+      this.pulls.weaponPools = data.weaponPools
+      this.pulls.charPools = data.characterPools
+      this.calculateStats()
+      console.log("Load success")
+      // Delay loading oat js until DOM is ready
+      //@ts-ignore
+      this.$nextTick(() => import('@knadh/oat/oat.min.js'))
+    } catch(e) {
+      console.error(e);
+      alert("Error loading data. Refresh to try again.")
+    }
+  },
+  calculateStats() {
+    this.pulls.weaponStats.pullNo = Object.values(this.pulls.weapons).reduce((p, n) => p + (n?.length ?? 0), 0)
+    this.pulls.weaponStats.currencySpent = this.pulls.weaponStats.pullNo * 500
+    this.pulls.weaponStats.hrObtained = Object.values(this.pulls.weapons).map(x=>x?.filter(x=>x.rarity === 6).length ?? 0).reduce((p, n) => p+n, 0)
+    this.pulls.weaponStats.lrObtained = Object.values(this.pulls.weapons).map(x=>x?.filter(x=>x.rarity === 5).length ?? 0).reduce((p, n) => p+n, 0)
+    
+    this.pulls.charStats.pullNo = Object.values(this.pulls.chars).reduce((p, n) => p + (n?.length ?? 0), 0)
+    this.pulls.charStats.currencySpent = this.pulls.charStats.pullNo * 500
+    this.pulls.charStats.hrObtained = Object.values(this.pulls.chars).map(x=>x?.filter(x=>x.rarity === 6).length ?? 0).reduce((p, n) => p+n, 0)
+    this.pulls.charStats.lrObtained = Object.values(this.pulls.chars).map(x=>x?.filter(x=>x.rarity === 5).length ?? 0).reduce((p, n) => p+n, 0)
+
+    this.pulls.charStats.avgPity = calculateAvgPity(this.pulls.chars)
+    this.pulls.weaponStats.avgPity = calculateAvgPity(this.pulls.weapons)
+
+    this.pulls.charStats.luckWR = calculate5050WinOdds(this.pulls.chars)
+
+  },
+  async loadUrl(e: SubmitEvent & {currentTarget: HTMLFormElement}) {
+    this.urlForm.enableSubmit = false
+
+    const fData = new FormData(e.currentTarget, e.submitter)
+    const file = fData.get('file') as File
+
+    try {
+      if (file.type !== "application/json") throw new Error("Invalid type " + file.type)
+
+      const fileCt = JSON.parse(await file.text()) as AKEGachaRecord
+
+      this.pulls.weapons = Object.groupBy(fileCt.weapons.map((x)=>{
+        const tobj: AKEWeaponHistory = {
+          id: x.weaponId,
+          name: x.weaponName,
+          type: x.weaponType,
+          rarity: x.rarity,
+          poolId: x.poolId,
+          poolName: x.poolName,
+          pulledAt: Number(x.gachaTs),
+          seqId: Number(x.seqId)
+        }
+
+        db.put("weapons", tobj)
+        return tobj
+      }), x=>x.poolId)
+
+      this.pulls.chars = Object.groupBy(await Promise.all(fileCt.characters.map(async (x)=>{
+        const tobj: AKECharacterHistory = {
+          id: x.charId,
+          name: x.charName,
+          rarity: x.rarity,
+          poolId: x.poolId,
+          poolName: x.poolName,
+          pulledAt: Number(x.gachaTs),
+          seqId: Number(x.seqId),
+          icon: (await db.get("assets", x.charName.replace(" ", "").toLowerCase())).value
+        }
+
+        await db.put("characters", tobj)
+        return tobj
+      })), x=>x.poolId)
+
+      this.calculateStats()
+
+      this.urlForm.message = "URL loaded"
+      setTimeout(() => {
+        this.urlForm.message = ""
+      }, 5000)
+
+      location.reload()
+
+    } catch(e: any) {
+      this.urlForm.error = e.message
+      setTimeout(() => {
+        this.urlForm.error = ""
+      }, 5000);
+    }
+
+    this.urlForm.enableSubmit = true
+    
+  },
+  // Actual data
+  pulls: {
+    // TODO: Typing
+    weapons: <Partial<Record<string, AKEWeaponHistory[]>>>{},
+    chars: <Partial<Record<string, AKECharacterHistory[]>>>{},
+    weaponPools: <{id: string, name: string}[]>[],
+    charPools: <{id: string, name: string}[]>[],
+    weaponStats: {
+      pullNo: 0,
+      currencySpent: 0,
+      hrObtained: 0,
+      lrObtained: 0,
+      avgPity: 0
+    },
+    charStats: {
+      pullNo: 0,
+      currencySpent: 0,
+      hrObtained: 0,
+      lrObtained: 0,
+      avgPity: 0,
+      luckWR: 0
+    },
+  },
+  urlForm: {
+    enableSubmit: true,
+    error: "",
+    message: ""
+  }
+}))
+
+async function loadData() {
+  if(!db) throw new Error("DB uninitialized before load");
+
+  const weapons = await db.getAll("weapons") as AKEWeaponHistory[]
+  const characters = await db.getAll("characters")
+  
+  return {
+    weapons: sortKeys(Object.groupBy<string, AKEWeaponHistory>(weapons.sort((a, b)=>b.pulledAt - a.pulledAt || b.seqId - a.seqId), x=>x.poolId)),
+    characters: sortKeys(Object.groupBy<string, AKECharacterHistory>(characters.sort((a, b)=>b.pulledAt - a.pulledAt || b.seqId - a.seqId), x=>x.poolId)),
+    weaponPools: removeDupes(weapons.map(x=>({id: x.poolId, name: x.poolName}))),
+    characterPools: removeDupes(characters.map(x=>({id: x.poolId, name: x.poolName}))),
+  }
+
+}
+
+function removeDupes(arr: any[]) {
+  const seen = new Set();
+
+  return arr.filter(el => {
+    const duplicate = seen.has(el.id);
+    seen.add(el.id);
+    return !duplicate;
+  });
+}
+
+function sortKeys(obj: Partial<Record<string, any>>) {
+  return Object.keys(obj)
+    .sort((a, b)=>obj[a].length > 0 && obj[b].length > 0 && obj[a][0]["pulledAt"] && obj[b][0]["pulledAt"] ? obj[b][0]["pulledAt"] - obj[a][0]["pulledAt"] : a > b ? -1 : 1) // Sorts keys ('fruit', 'vegetable') alphabetically
+    .reduce((acc, key) => {
+      acc[key] = obj[key];
+      return acc;
+    }, <{[x: string]: any}>{});
+}
+
+function calculateAvgPity(data: Partial<Record<any, any[]>>) {
+  const poolAverages = Object.values(data)
+      .map(poolChars => {
+        if (!poolChars) return 0;
+        const rarity6Positions = poolChars
+            .toReversed()
+            .map((char, index) => char.rarity === 6 ? index+1 : -1)
+            .filter(pos => pos !== -1);
+
+        if (rarity6Positions.length === 0) return 0;
+        if (rarity6Positions.length === 1) return rarity6Positions[0];
+
+        const pullsBetween = rarity6Positions
+            .map((pos, i) => i === 0 ? pos : pos - rarity6Positions[i - 1]);
+
+        return pullsBetween.reduce((sum, pulls) => sum + pulls, 0) / pullsBetween.length;
+      })
+      .filter(avg => avg > 0);
+
+  return poolAverages.length === 0 ? 0 :
+      poolAverages.reduce((sum, avg) => sum + avg, 0) / poolAverages.length;
+}
+
+function calculate5050WinOdds(data: Partial<Record<string, AKECharacterHistory[]>>) {
+  const excludedCharacters = new Set(['chr_0025_ardelia', 'chr_0026_lastrite', 'chr_0029_pograni', 'chr_0009_azrila', 'chr_0015_lifeng']);
+  const excludedPools = new Set(['standard', 'beginner']);
+
+  const sixStarChars = Object.entries(data)
+      .filter(([poolId]) => !excludedPools.has(poolId.toLowerCase()))
+      .flatMap(([, characters]) => characters?.filter(char => char.rarity === 6) ?? []);
+
+  return sixStarChars.length === 0 ? 0 :
+      (sixStarChars.filter(char => !excludedCharacters.has(char.id)).length / sixStarChars.length) * 100;
+}
+
+
+console.log("Alpinejs start")
+Alpine.start()
