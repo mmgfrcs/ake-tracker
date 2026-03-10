@@ -33,7 +33,7 @@ jobs:
         with:
           run_install: true # optional, default is null
       - name: Build pages
-        run: pnpm Build
+        run: pnpm build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
