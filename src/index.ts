@@ -134,8 +134,7 @@ Alpine.data("pulldata", () => ({
           poolId: x.poolId,
           poolName: x.poolName,
           pulledAt: Number(x.gachaTs),
-          seqId: Number(x.seqId),
-          icon: (await db.get("assets", x.charName.replace(" ", "").toLowerCase())).value
+          seqId: Number(x.seqId)
         }
 
         await db.put("characters", tobj)
@@ -160,6 +159,9 @@ Alpine.data("pulldata", () => ({
 
     this.urlForm.enableSubmit = true
     
+  },
+  async getIcon(char: AKECharacterHistory) {
+    return (await db.get("assets", char.name.replace(" ", "").toLowerCase())).value
   },
   // Actual data
   pulls: {
