@@ -9,7 +9,7 @@ import '@knadh/oat/oat.min.js'
 const link = document.querySelector("link[rel~='icon']");
 if (link) (link as HTMLLinkElement).href = icon;
 const applink = document.querySelector("link[rel~='apple-touch-icon']");
-if (applink) (link as HTMLLinkElement).href = icon;
+if (applink) (applink as HTMLLinkElement).href = icon;
 
 const iconImg = document.querySelector(".icon");
 if (iconImg) (iconImg as HTMLImageElement).src = icon;
