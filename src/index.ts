@@ -52,12 +52,13 @@ Alpine.data("pulldata", () => ({
         }
       });
 
+      await db.clear("assets")
       const assetMod = import.meta.glob("/src/assets/chars/*.png", {import: "default"})
 
       for(let assetPth in assetMod) {
         const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
         if (!name) continue;
-
+        
         await db.put("assets", {id: name[0], value: await assetMod[assetPth]()})
       }
       
@@ -77,6 +78,7 @@ Alpine.data("pulldata", () => ({
           tabEl.item(i)?.init();
         }
       })
+      
     } catch(e) {
       console.error(e);
       alert("Error loading data. Refresh to try again.")
@@ -262,6 +264,28 @@ function calculate5050WinOdds(data: Partial<Record<string, AKECharacterHistory[]
       (sixStarChars.filter(char => !excludedCharacters.has(char.id)).length / sixStarChars.length) * 100;
 }
 
-
 console.log("Alpinejs start")
 Alpine.start()
+
+if(!(await navigator.storage.persisted()) && [null, "denied"].includes(localStorage.getItem("persist"))) {
+  const decision = await new Promise<string>(res => {
+    const dialog = document.getElementById("persistence-dialog") as HTMLDialogElement
+    dialog.addEventListener("close", function onClose() {
+      dialog.removeEventListener('close', onClose)
+      console.log(dialog.returnValue)
+      res(dialog.returnValue)
+    })
+    dialog.showModal()
+  })
+
+  if (decision === "yes") {
+    const tryPersist = await navigator.storage.persist()
+    localStorage.setItem("persist", tryPersist ? "enabled" : "denied")
+    if (!tryPersist) {
+      const dialog = document.getElementById("persistence-denied-dialog") as HTMLDialogElement
+      dialog.showModal()
+    }
+  } else localStorage.setItem("persist", decision)
+
+  
+}
