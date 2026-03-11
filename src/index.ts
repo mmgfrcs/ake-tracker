@@ -3,9 +3,15 @@ import './index.css'
 import * as idb from 'idb'
 import Alpine from 'alpinejs'
 import icon from './assets/icon.png'
-import type { AKEGachaRecord } from './models/record';
-import type {AKECharacterHistory, AKEWeaponHistory} from "./models/history.ts";
+import type { AKEGachaCharacter, AKEGachaRecord, AKEGachaWeapon } from './models/record';
+import type {AKECharacterHistory, AKEDBSchema, AKEWeaponHistory} from "./models/history.ts";
 import '@knadh/oat/oat.min.js'
+import { createIcons, Download } from 'lucide';
+
+createIcons({icons: {
+  Download
+}})
+
 const link = document.querySelector("link[rel~='icon']");
 if (link) (link as HTMLLinkElement).href = icon;
 const applink = document.querySelector("link[rel~='apple-touch-icon']");
@@ -15,7 +21,7 @@ const iconImg = document.querySelector(".icon");
 if (iconImg) (iconImg as HTMLImageElement).src = icon;
 
 
-let db: idb.IDBPDatabase;
+let db: idb.IDBPDatabase<AKEDBSchema>;
 
 //@ts-ignore
 window.Alpine = Alpine
@@ -59,7 +65,7 @@ Alpine.data("pulldata", () => ({
         const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
         if (!name) continue;
         
-        await db.put("assets", {id: name[0], value: await assetMod[assetPth]()})
+        await db.put("assets", {id: name[0], value: await assetMod[assetPth]() as string})
       }
       
       const data = await loadData()
@@ -112,7 +118,7 @@ Alpine.data("pulldata", () => ({
 
       const fileCt = JSON.parse(await file.text()) as AKEGachaRecord
 
-      this.pulls.weapons = Object.groupBy(fileCt.weapons.map((x)=>{
+      this.pulls.weapons = Object.groupBy(await Promise.all(fileCt.weapons.map(async (x)=>{
         const tobj: AKEWeaponHistory = {
           id: x.weaponId,
           name: x.weaponName,
@@ -124,9 +130,10 @@ Alpine.data("pulldata", () => ({
           seqId: Number(x.seqId)
         }
 
-        db.put("weapons", tobj)
+        await db.delete("weapons", Number(x.seqId))
+        await db.put("weapons", tobj)
         return tobj
-      }), x=>x.poolId)
+      })), x=>x.poolId)
 
       this.pulls.chars = Object.groupBy(await Promise.all(fileCt.characters.map(async (x)=>{
         const tobj: AKECharacterHistory = {
@@ -136,9 +143,10 @@ Alpine.data("pulldata", () => ({
           poolId: x.poolId,
           poolName: x.poolName,
           pulledAt: Number(x.gachaTs),
-          seqId: Number(x.seqId)
+          seqId: Number(x.seqId),
+          isFree: x.isFree
         }
-
+        await db.delete("characters", Number(x.seqId))
         await db.put("characters", tobj)
         return tobj
       })), x=>x.poolId)
@@ -163,7 +171,7 @@ Alpine.data("pulldata", () => ({
     
   },
   async getIcon(char: AKECharacterHistory) {
-    return (await db.get("assets", char.name.replace(" ", "").toLowerCase())).value
+    return (await db.get("assets", char.name.replace(" ", "").toLowerCase()))?.value
   },
   // Actual data
   pulls: {
@@ -192,6 +200,48 @@ Alpine.data("pulldata", () => ({
     enableSubmit: true,
     error: "",
     message: ""
+  }
+}))
+
+Alpine.data("backup", () => ({
+  async backup() {
+    console.log("Start backup")
+      const charArr = (await db.getAll("characters")).map(x=>(<AKEGachaCharacter>{
+        charId: x.id,
+        charName: x.name,
+        gachaTs: x.pulledAt.toString(),
+        isFree: x.isFree,
+        isNew: false,
+        poolId: x.poolId,
+        poolName: x.poolName,
+        rarity: x.rarity,
+        seqId: x.seqId.toString()
+      }))
+      const weapArr = (await db.getAll("weapons")).map(x=>(<AKEGachaWeapon>{
+        weaponId: x.id,
+        weaponName: x.name,
+        weaponType: x.type,
+        gachaTs: x.pulledAt.toString(),
+        isNew: false,
+        poolId: x.poolId,
+        poolName: x.poolName,
+        rarity: x.rarity,
+        seqId: x.seqId.toString()
+      }))
+
+      const blob = new Blob([JSON.stringify({characters: charArr, weapons: weapArr})], {type: 'application/json'});
+      const blobURL = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.setAttribute('href', blobURL);
+      a.setAttribute('download', `akebackup-${new Date().toISOString()}.json`);
+      a.style.display = 'none';
+      document.body.appendChild(a);
+
+      a.click();
+
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobURL);
   }
 }))
 

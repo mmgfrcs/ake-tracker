@@ -4,6 +4,7 @@ body { height: 100dvh; display: flex; flex-direction: column; }
 .flex-1 { flex: 1; }
 .flex-wrap {flex-wrap: wrap;}
 .m-0 { margin: 0;}
+.p-0 { padding: 0;}
 .p-2 { padding: var(--space-2); }
 .card.stat { min-width: 12rem;}
 .icon { width: var(--space-12); border-radius: var(--space-2);}
@@ -24,6 +25,10 @@ body { height: 100dvh; display: flex; flex-direction: column; }
   display: -webkit-inline-box;
   -webkit-box-orient: vertical; 
 }
+.iconbutton.ghost:hover {
+  background-color: transparent;
+  color: rgb(from var(--primary) r g b / .8);
+}
 .relative { position: relative; }
 .absolute { position: absolute; }
 .bottom-right-0 { bottom: 0; right: 0;}
@@ -38,3 +43,17 @@ body { height: 100dvh; display: flex; flex-direction: column; }
 
 .color-limited { background-color: #a5422432; }
 .color-semi-limited { background-color: #88882432; }
+
+[data-tooltip]:before {
+  border-top-color: transparent;
+  border-bottom-color: var(--foreground);
+  inset-block-end: -5px;
+}
+
+[data-tooltip]:after {
+  inset-block-end: -35px;
+}
+
+[data-tooltip]:has(.lucide-download):after {
+  inset-inline-start: 0%;
+}
