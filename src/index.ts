@@ -67,6 +67,15 @@ Alpine.data("pulldata", () => ({
         
         await db.put("assets", {id: name[0], value: await assetMod[assetPth]() as string})
       }
+
+      const assetWeapMod = import.meta.glob("/src/assets/weapons/*.png", {import: "default"})
+
+      for(let assetPth in assetWeapMod) {
+        const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
+        if (!name) continue;
+        
+        await db.put("assets", {id: name[0], value: await assetWeapMod[assetPth]() as string})
+      }
       
       const data = await loadData()
       this.pulls.weapons = data.weapons
@@ -170,8 +179,8 @@ Alpine.data("pulldata", () => ({
     this.urlForm.enableSubmit = true
     
   },
-  async getIcon(char: AKECharacterHistory) {
-    return (await db.get("assets", char.name.replace(" ", "").toLowerCase()))?.value
+  async getIcon(char: AKECharacterHistory | AKEWeaponHistory) {
+    return (await db.get("assets", char.name.replaceAll(" ", "").toLowerCase()))?.value
   },
   // Actual data
   pulls: {
@@ -249,7 +258,7 @@ async function loadData() {
   if(!db) throw new Error("DB uninitialized before load");
 
   const weapons = await db.getAll("weapons") as AKEWeaponHistory[]
-  const characters = await db.getAll("characters")
+  const characters = await db.getAll("characters") as AKECharacterHistory[]
   
   return {
     weapons: sortKeys(Object.groupBy<string, AKEWeaponHistory>(weapons.sort((a, b)=>b.pulledAt - a.pulledAt || b.seqId - a.seqId), x=>x.poolId)),
@@ -336,6 +345,5 @@ if(!(await navigator.storage.persisted()) && [null, "denied"].includes(localStor
       dialog.showModal()
     }
   } else localStorage.setItem("persist", decision)
-
-  
 }
+
