@@ -49,7 +49,7 @@
         <h3>Data Persistence Denied</h3>
       </header>
       <div>
-        <p>Data persistence permission has been denied by your browser.</p>
+        <p>Your browser has denied data persistence permission.</p>
         <p>If this is intentional on your part, please refresh the page and select "No" on the dialog that appears</p>
         <p>Otherwise, refresh the page to try again.</p>
       </div>
@@ -64,12 +64,12 @@
     <details class="mb-4">
       <summary>Submit New Pulls</summary>
       <ul>
-        <li>Download the <a href="https://raw.githubusercontent.com/mmgfrcs/ake-tracker/ae0ef99a905a5241267188807ea726a26f877cf7/get-record.ps1"><code>get-record.ps1</code></a> PowerShell script in the repo.</li>
+        <li>Download the <a href="https://raw.githubusercontent.com/mmgfrcs/ake-tracker/d8937e55f730784285ee8873adb8da84a7af8094/get-record.ps1"><code>get-record.ps1</code></a> PowerShell script in the repo.</li>
         <li>On Windows: Right-click the script file &gt; Run with PowerShell &gt; Open</li>
-        <li>Load the output JSON file here. It should be named <code>akerecord.json</code> and saved in the same folder the script is run on.</li>
+        <li>Load the output JSON file here by clicking on the Choose File button below and selecting the <code>akerecord.json</code> file that is saved in the same folder the script is run on, then click Load File</li>
       </ul>
       <blockquote>
-        Script pinned to commit <a href="https://github.com/mmgfrcs/ake-tracker/commit/ae0ef99a905a5241267188807ea726a26f877cf7"><code>ae0ef99a905a5241267188807ea726a26f877cf7</code></a> (Initial Commit)
+        Script pinned to commit <a href="https://github.com/mmgfrcs/ake-tracker/commit/d8937e55f730784285ee8873adb8da84a7af8094"><code>d8937e55f730784285ee8873adb8da84a7af8094</code></a> (Fix Null Character and PSS7 Error)
       </blockquote>
       <form x-on:submit.prevent="loadUrl">
         <div class="mb-4" x-transition role="alert" data-variant="success" x-show="urlForm.message !== ''" x-text="urlForm.message"></div>
