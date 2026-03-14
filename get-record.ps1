@@ -37,7 +37,7 @@ function Get-AKERecords {
     # Character banners require a pool type. We grab the pool type first
     $uriBuilder = [System.UriBuilder]"https://ef-webview.gryphline.com/api/record/char"
     try {
-      Invoke-WebRequest -Uri "https://ef-webview.gryphline.com/api/record/char?lang=en-us&token=A&server_id=2" -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue -UseBasicParsing
+      Invoke-WebRequest -Uri "https://ef-webview.gryphline.com/api/record/char?lang=en-us&token=A&server_id=$ServerID" -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue -UseBasicParsing
     }
     catch {
       # Different way to do it based on Powershell version
@@ -54,10 +54,7 @@ function Get-AKERecords {
       }
       else {
         # For PowerShell Core/7+
-        $stream = $exception.Response.Content.ReadAsStreamAsync().GetAwaiter().GetResult()
-        $stream.Position = 0
-        $reader = [System.IO.StreamReader]::new($stream)
-        if (($reader.ReadToEnd() | ConvertFrom-Json).message[-1] -match 'values:\s*(.+)') {
+        if ((ConvertFrom-Json $_).message[-1] -match 'values:\s*(.+)') {
           $pools = $Matches[1] -split ',\s*'
         } else {
           $pools = @()
@@ -92,7 +89,6 @@ function Get-AKERecords {
         $sq.Add($key, $reqQuery.$key)
       }
       $uriBuilder.Query = $sq.ToString()
-
       $resp = Invoke-WebRequest -Uri $uriBuilder.Uri.OriginalString -UserAgent "Mozilla/5.0" -UseBasicParsing
       $respJson = $resp | ConvertFrom-Json
       
@@ -119,7 +115,8 @@ function Get-AKERecords {
 }
 
 # Load file at this location
-$FilePath = $env:LOCALAPPDATA + "Low\Gryphline\Endfield\sdklogs\HGWebview.log"
+# $FilePath = $env:LOCALAPPDATA + "Low\Gryphline\Endfield\sdklogs\HGWebview.log"
+$FilePath = $env:LOCALAPPDATA + "\PlatformProcess\Cache\data_1"
 
 # Validate file exists
 if (-not (Test-Path -Path $FilePath)) {
@@ -131,7 +128,7 @@ $lines = Get-Content -Path $FilePath
 [array]::Reverse($lines)
 
 # Regex to match a URL with a query string
-$urlPattern = 'https?://ef-webview.gryphline.com[^\s"''<>]+\?[^\s"''<>]+'
+$urlPattern = 'https?://ef-webview.gryphline.com/api/record[^\s"''<>{}\0]+\?[^\s"''<>{}\0]+'
 
 $found = $false
 
@@ -157,8 +154,8 @@ foreach ($line in $lines) {
   }
 
   # Get token and server from query string
-  $data.weapons = Get-AKERecords -Type Weapon -Token $params["u8_token"] -ServerID $params["server"]
-  $data.characters = Get-AKERecords -Type Character -Token $params["u8_token"] -ServerID $params["server"]
+  $data.weapons = Get-AKERecords -Type Weapon -Token $params["token"] -ServerID $params["server_id"]
+  $data.characters = Get-AKERecords -Type Character -Token $params["token"] -ServerID $params["server_id"]
 
   $data | ConvertTo-Json -Compress | Out-File -FilePath "./akerecord.json"
 
@@ -169,5 +166,5 @@ foreach ($line in $lines) {
 }
 
 if (-not $found) {
-  Write-Host "`nNo URL found" -ForegroundColor Red
+  Write-Host "`nNo URL found. Make sure that you have opened the in-game pull history at least once today." -ForegroundColor Red
 }
