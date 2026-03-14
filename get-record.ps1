@@ -157,7 +157,7 @@ foreach ($line in $lines) {
   $data.weapons = Get-AKERecords -Type Weapon -Token $params["token"] -ServerID $params["server_id"]
   $data.characters = Get-AKERecords -Type Character -Token $params["token"] -ServerID $params["server_id"]
 
-  $data | ConvertTo-Json -Compress | Out-File -FilePath "./akerecord.json"
+  [System.IO.File]::WriteAllText("./akerecord.json", ($data | ConvertTo-Json -Compress), [System.Text.Encoding]::UTF8)
 
   Write-Host "`nDone! Record saved to $($PWD.Path + "/akerecord.json")" -ForegroundColor Green
 
