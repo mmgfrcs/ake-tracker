@@ -26,9 +26,9 @@ To upload your pulls, you need to grab your pulls from the Arknights: Endfield s
 You can download the script from the repo, right-click on it and click Run with PowerShell &gt; Open (if you're on Windows), or run the following command on the PowerShell terminal:
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/mmgfrcs/ake-tracker/d8937e55f730784285ee8873adb8da84a7af8094/get-record.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/mmgfrcs/ake-tracker/cbb9fb411e50f4d50d555d535a51c256b9f7ad2a/get-record.ps1 | iex
 ```
-> Pinned to commit d8937e55f730784285ee8873adb8da84a7af8094 (Fix Null Character and PSS7 Error) as of writing this README file
+> Pinned to commit cbb9fb411e50f4d50d555d535a51c256b9f7ad2a (Fix Script Output Encoding) as of writing this README file
 
 > [!WARNING]
 > Make sure the URL you use in the command is *pinned* to a commit like the above example
