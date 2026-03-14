@@ -57,3 +57,15 @@ body { height: 100dvh; display: flex; flex-direction: column; }
 [data-tooltip]:has(.lucide-download):after {
   inset-inline-start: 0%;
 }
+
+@media all and (width >= 72rem) {
+  .md\:flex-row {
+    flex-direction: row;
+  }
+}
+
+@media all and (width >= 60rem) {
+  .sm\:flex-row {
+    flex-direction: row;
+  }
+}
