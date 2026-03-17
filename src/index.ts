@@ -59,7 +59,7 @@ Alpine.data("pulldata", () => ({
       });
 
       await db.clear("assets")
-      const assetMod = import.meta.glob("/src/assets/chars/*.png", {import: "default"})
+      const assetMod = import.meta.glob("/src/assets/chars/*.webp", {import: "default"})
 
       for(let assetPth in assetMod) {
         const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
@@ -68,7 +68,7 @@ Alpine.data("pulldata", () => ({
         await db.put("assets", {id: name[0], value: await assetMod[assetPth]() as string})
       }
 
-      const assetWeapMod = import.meta.glob("/src/assets/weapons/*.png", {import: "default"})
+      const assetWeapMod = import.meta.glob("/src/assets/weapons/*.webp", {import: "default"})
 
       for(let assetPth in assetWeapMod) {
         const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
