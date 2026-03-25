@@ -7,6 +7,7 @@ import type { AKEGachaCharacter, AKEGachaRecord, AKEGachaWeapon } from './models
 import type {AKECharacterHistory, AKEDBSchema, AKEWeaponHistory} from "./models/history.ts";
 import '@knadh/oat/oat.min.js'
 import { createIcons, Download } from 'lucide';
+import { registerSW } from 'virtual:pwa-register'
 
 createIcons({icons: {
   Download
@@ -25,6 +26,31 @@ let db: idb.IDBPDatabase<AKEDBSchema>;
 
 //@ts-ignore
 window.Alpine = Alpine
+
+Alpine.data("persistence", () => ({
+  async isPersistent() {
+    return await navigator.storage.persisted()
+  },
+  async showPersistence() {
+    const decision = await new Promise<string>(res => {
+      const dialog = document.getElementById("persistence-dialog") as HTMLDialogElement
+      dialog.addEventListener("close", function onClose() {
+        dialog.removeEventListener('close', onClose)
+        console.log(dialog.returnValue)
+        res(dialog.returnValue)
+      })
+      dialog.showModal()
+    })
+
+    if (decision === "yes") {
+      const tryPersist = await navigator.storage.persist()
+      if (!tryPersist) {
+        const dialog = document.getElementById("persistence-denied-dialog") as HTMLDialogElement
+        dialog.showModal()
+      }
+    }
+  }
+}))
 
 Alpine.data("pulldata", () => ({
   async initDb() {
@@ -326,24 +352,20 @@ function calculate5050WinOdds(data: Partial<Record<string, AKECharacterHistory[]
 console.log("Alpinejs start")
 Alpine.start()
 
-if(!(await navigator.storage.persisted()) && [null, "denied"].includes(localStorage.getItem("persist"))) {
-  const decision = await new Promise<string>(res => {
-    const dialog = document.getElementById("persistence-dialog") as HTMLDialogElement
-    dialog.addEventListener("close", function onClose() {
-      dialog.removeEventListener('close', onClose)
-      console.log(dialog.returnValue)
-      res(dialog.returnValue)
-    })
-    dialog.showModal()
-  })
-
-  if (decision === "yes") {
-    const tryPersist = await navigator.storage.persist()
-    localStorage.setItem("persist", tryPersist ? "enabled" : "denied")
-    if (!tryPersist) {
-      const dialog = document.getElementById("persistence-denied-dialog") as HTMLDialogElement
+registerSW({
+  onOfflineReady() {
+    //@ts-ignore
+    ot.toast("App is ready for offline use", "Offline Ready", { variant: 'success' })
+  },
+  async onNeedRefresh() {
+    await new Promise<void>(res => {
+      const dialog = document.getElementById("persistence-dialog") as HTMLDialogElement
+      dialog.addEventListener("close", function onClose() {
+        dialog.removeEventListener('close', onClose)
+        res()
+      })
       dialog.showModal()
-    }
-  } else localStorage.setItem("persist", decision)
-}
-
+    })
+    location.reload()
+  },
+})

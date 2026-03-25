@@ -1,4 +1,4 @@
-body { height: 100dvh; display: flex; flex-direction: column; }
+body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; }
 
 .inline-flex { display: inline-flex; }
 .flex-1 { flex: 1; }
@@ -29,6 +29,27 @@ body { height: 100dvh; display: flex; flex-direction: column; }
   background-color: transparent;
   color: rgb(from var(--primary) r g b / .8);
 }
+[data-variant="warning"] .textbutton.ghost {
+  background-color: transparent;
+  color: var(--warning);
+  padding: 0;
+}
+
+[role="alert"][data-variant="warning"] .textbutton.ghost {
+  background-color: transparent;
+  color: var(--warning);
+  padding: 0;
+  font-weight: 600;
+}
+
+[role="alert"][data-variant="warning"] .textbutton.ghost:hover {
+  text-decoration: underline;
+}
+
+[role="alert"] svg {
+  vertical-align: sub;
+}
+
 .relative { position: relative; }
 .absolute { position: absolute; }
 .bottom-right-0 { bottom: 0; right: 0;}
