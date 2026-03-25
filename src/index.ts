@@ -352,20 +352,23 @@ function calculate5050WinOdds(data: Partial<Record<string, AKECharacterHistory[]
 console.log("Alpinejs start")
 Alpine.start()
 
-registerSW({
+const updateSW = registerSW({
   onOfflineReady() {
     //@ts-ignore
     ot.toast("App is ready for offline use", "Offline Ready", { variant: 'success' })
   },
   async onNeedRefresh() {
-    await new Promise<void>(res => {
+    const decision = await new Promise<string>(res => {
       const dialog = document.getElementById("refresh-dialog") as HTMLDialogElement
       dialog.addEventListener("close", function onClose() {
         dialog.removeEventListener('close', onClose)
-        res()
+        res(dialog.returnValue)
       })
       dialog.showModal()
     })
-    location.reload()
+
+    if (decision === "ok") location.reload()
   },
 })
+
+await updateSW()
