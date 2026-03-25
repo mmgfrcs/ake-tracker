@@ -359,7 +359,7 @@ registerSW({
   },
   async onNeedRefresh() {
     await new Promise<void>(res => {
-      const dialog = document.getElementById("persistence-dialog") as HTMLDialogElement
+      const dialog = document.getElementById("refresh-dialog") as HTMLDialogElement
       dialog.addEventListener("close", function onClose() {
         dialog.removeEventListener('close', onClose)
         res()

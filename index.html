@@ -69,6 +69,17 @@
         <button type="button" commandfor="persistence-denied-dialog" command="close" >OK</button>
       </footer>
   </dialog>
+  <dialog id="refresh-dialog">
+    <header>
+      <h3>App Update</h3>
+    </header>
+    <div>
+      <p>An updated version of the app is available. Refreshing the page to grab the updated app.</p>
+    </div>
+    <footer>
+      <button value="ok">OK</button>
+    </footer>
+  </dialog>
   <main class="p-4 flex-1" x-data="pulldata" x-init="await initDb()">
     <div role="alert" data-variant="warning" x-data="persistence" x-show="!(await isPersistent())" class="mb-4">
       <strong>Data Persistence disabled</strong> 
@@ -77,38 +88,6 @@
                                                                      height="16"></i> button</span>
       <button class="textbutton ghost p-0"  x-on:click="await showPersistence()">Enable</button>
     </div>
-    <details class="mb-4" x-data="sync">
-      <summary>Data Sync</summary>
-      <div x-show="!enableSync">
-        <p>Data Sync Disabled</p>
-        <button type="button" x-on:click="enableSync = true">Start as Host</button>
-        <button type="button" x-on:click="enableSync = true">Start as Client</button>
-      </div>
-      <div x-show="enableSync">
-        <h3>Current Device</h3>.
-        
-        <article class="card stat flex-1">
-          <header>
-            <h4 x-text="currentDevice">0</h4>
-            <p>Origometry Spent</p>
-          </header>
-        </article>
-      </div>
-
-      <dialog id="sync-dialog">
-        <form method="dialog">
-          <header>
-            <h3>P2P Sync Direction</h3>
-          </header>
-          <div>
-          </div>
-          <footer>
-            <button value="no" class="outline">No</button>
-            <button value="yes">Yes</button>
-          </footer>
-        </form>
-      </dialog>
-    </details>
     <details class="mb-4">
       <summary>Submit New Pulls</summary>
       <ul>
