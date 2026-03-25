@@ -13,8 +13,8 @@ export default defineConfig({
         "background_color": "#09090b",
         "short_name": "AKETracker",
         "display": "standalone",
-        "start_url": "/",
-        "scope": "/",
+        "start_url": "./",
+        "scope": "./",
         "description": "A local-first pull tracker for Arknights: Endfield",
         "icons": [
           {
