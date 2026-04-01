@@ -6,6 +6,7 @@ body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hi
 .m-0 { margin: 0;}
 .p-0 { padding: 0;}
 .p-2 { padding: var(--space-2); }
+.mt-4 { margin-top: var(--space-4); }
 .card.stat { min-width: 12rem;}
 .icon { width: var(--space-12); border-radius: var(--space-2);}
 .icon-lg { width: var(--space-18); border-radius: var(--space-2);}
@@ -15,6 +16,9 @@ body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hi
 .w-fit { width: fit-content; }
 .text-sm { font-size: 0.8rem;}
 .text-lg { font-size: 1.1rem;}
+.h-full { height: 100%; }
+.w-full { width: 100%; }
+.font-bold { font-weight: bold; }
 .icontext-center { 
   height: 4rem; 
   text-align: center; 
@@ -75,13 +79,16 @@ body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hi
   inset-block-end: -35px;
 }
 
-[data-tooltip]:has(.lucide-download):after {
-  inset-inline-start: 0%;
+[data-tooltip]:has(.lucide-refresh-cw):after {
+  inset-inline-start: -110%;
 }
 
 @media all and (width >= 72rem) {
   .md\:flex-row {
     flex-direction: row;
+  }
+  .md\:flex-col {
+    flex-direction: column;
   }
 }
 

@@ -3,14 +3,18 @@ import './index.css'
 import * as idb from 'idb'
 import Alpine from 'alpinejs'
 import icon from './assets/icon.png'
-import type { AKEGachaCharacter, AKEGachaRecord, AKEGachaWeapon } from './models/record';
+import type {AKEGachaCharacter, AKEGachaRecord, AKEGachaWeapon} from './models/record';
 import type {AKECharacterHistory, AKEDBSchema, AKEWeaponHistory} from "./models/history.ts";
 import '@knadh/oat/oat.min.js'
-import { createIcons, Download } from 'lucide';
-import { registerSW } from 'virtual:pwa-register'
+import {createIcons, Download, Trash2} from 'lucide';
+import {registerSW} from 'virtual:pwa-register'
+import {type DataConnection, Peer} from 'peerjs'
+import {applyUpdate, Doc, encodeStateAsUpdate, encodeStateVector} from 'yjs'
+import type {SyncMessage} from "./models/sync.ts";
 
 createIcons({icons: {
-  Download
+  Download,
+  Trash2
 }})
 
 const link = document.querySelector("link[rel~='icon']");
@@ -22,15 +26,58 @@ const iconImg = document.querySelector(".icon");
 if (iconImg) (iconImg as HTMLImageElement).src = icon;
 
 
-let db: idb.IDBPDatabase<AKEDBSchema>;
+let db: idb.IDBPDatabase<AKEDBSchema> = await idb.openDB("akeTracker", 2, {
+  upgrade(db) {
+    if (!db.objectStoreNames.contains("assets"))
+      db.createObjectStore("assets", {
+        keyPath: "id"
+      })
+
+    if (!db.objectStoreNames.contains("characters")) {
+      const chrstore = db.createObjectStore("characters", {
+        keyPath: "seqId"
+      })
+
+      chrstore.createIndex('name', 'name');
+      chrstore.createIndex('pulledAt', 'pulledAt');
+    }
+
+    if (!db.objectStoreNames.contains("weapons")) {
+      const wepstore = db.createObjectStore("weapons", {
+        keyPath: "seqId"
+      })
+
+      wepstore.createIndex('name', 'name');
+      wepstore.createIndex('pulledAt', 'pulledAt');
+    }
+
+  }
+});
+
+await db.clear("assets")
+const assetMod = import.meta.glob("/src/assets/chars/*.webp", {import: "default"})
+
+for(let assetPth in assetMod) {
+  const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
+  if (!name) continue;
+
+  await db.put("assets", {id: name[0], value: await assetMod[assetPth]() as string})
+}
+
+const assetWeapMod = import.meta.glob("/src/assets/weapons/*.webp", {import: "default"})
+
+for(let assetPth in assetWeapMod) {
+  const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
+  if (!name) continue;
+
+  await db.put("assets", {id: name[0], value: await assetWeapMod[assetPth]() as string})
+}
 
 //@ts-ignore
 window.Alpine = Alpine
 
 Alpine.data("persistence", () => ({
-  async isPersistent() {
-    return await navigator.storage.persisted()
-  },
+  isPersistent: false,
   async showPersistence() {
     const decision = await new Promise<string>(res => {
       const dialog = document.getElementById("persistence-dialog") as HTMLDialogElement
@@ -48,61 +95,17 @@ Alpine.data("persistence", () => ({
         const dialog = document.getElementById("persistence-denied-dialog") as HTMLDialogElement
         dialog.showModal()
       }
+      this.isPersistent = await navigator.storage.persisted()
     }
+  },
+  async init() {
+    this.isPersistent = await navigator.storage.persisted()
   }
 }))
 
 Alpine.data("pulldata", () => ({
-  async initDb() {
+  async init() {
     try {
-      // Let us open our database
-      db = await idb.openDB("akeTracker", 2, {
-        upgrade(db) {
-          if (!db.objectStoreNames.contains("assets"))
-            db.createObjectStore("assets", {
-              keyPath: "id"
-            })
-
-          if (!db.objectStoreNames.contains("characters")) {
-            const chrstore = db.createObjectStore("characters", {
-              keyPath: "seqId"
-            })
-
-            chrstore.createIndex('name', 'name');
-            chrstore.createIndex('pulledAt', 'pulledAt');
-          }
-
-          if (!db.objectStoreNames.contains("weapons")) {
-            const wepstore = db.createObjectStore("weapons", {
-              keyPath: "seqId"
-            })
-
-            wepstore.createIndex('name', 'name');
-            wepstore.createIndex('pulledAt', 'pulledAt');
-          }
-
-        }
-      });
-
-      await db.clear("assets")
-      const assetMod = import.meta.glob("/src/assets/chars/*.webp", {import: "default"})
-
-      for(let assetPth in assetMod) {
-        const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
-        if (!name) continue;
-        
-        await db.put("assets", {id: name[0], value: await assetMod[assetPth]() as string})
-      }
-
-      const assetWeapMod = import.meta.glob("/src/assets/weapons/*.webp", {import: "default"})
-
-      for(let assetPth in assetWeapMod) {
-        const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
-        if (!name) continue;
-        
-        await db.put("assets", {id: name[0], value: await assetWeapMod[assetPth]() as string})
-      }
-      
       const data = await loadData()
       this.pulls.weapons = data.weapons
       this.pulls.chars = data.characters
@@ -119,9 +122,10 @@ Alpine.data("pulldata", () => ({
           tabEl.item(i)?.init();
         }
       })
-      
+
     } catch(e) {
       console.error(e);
+
       alert("Error loading data. Refresh to try again.")
     }
   },
@@ -241,42 +245,277 @@ Alpine.data("pulldata", () => ({
 Alpine.data("backup", () => ({
   async backup() {
     console.log("Start backup")
-      const charArr = (await db.getAll("characters")).map(x=>(<AKEGachaCharacter>{
-        charId: x.id,
-        charName: x.name,
-        gachaTs: x.pulledAt.toString(),
-        isFree: x.isFree,
-        isNew: false,
-        poolId: x.poolId,
-        poolName: x.poolName,
-        rarity: x.rarity,
-        seqId: x.seqId.toString()
-      }))
-      const weapArr = (await db.getAll("weapons")).map(x=>(<AKEGachaWeapon>{
-        weaponId: x.id,
-        weaponName: x.name,
-        weaponType: x.type,
-        gachaTs: x.pulledAt.toString(),
-        isNew: false,
-        poolId: x.poolId,
-        poolName: x.poolName,
-        rarity: x.rarity,
-        seqId: x.seqId.toString()
-      }))
+    
+    const blob = new Blob([JSON.stringify(await getDataForBackupAndSync())], {type: 'application/json'});
+    const blobURL = URL.createObjectURL(blob);
 
-      const blob = new Blob([JSON.stringify({characters: charArr, weapons: weapArr})], {type: 'application/json'});
-      const blobURL = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('href', blobURL);
+    a.setAttribute('download', `akebackup-${new Date().toISOString()}.json`);
+    a.style.display = 'none';
+    document.body.appendChild(a);
 
-      const a = document.createElement('a');
-      a.setAttribute('href', blobURL);
-      a.setAttribute('download', `akebackup-${new Date().toISOString()}.json`);
-      a.style.display = 'none';
-      document.body.appendChild(a);
+    a.click();
 
-      a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobURL);
+  }
+}))
 
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobURL);
+Alpine.data("sync", () => ({
+  peer: <Peer | null>null,
+  doc: <Doc | null>null,
+  enableSync: localStorage.getItem("syncId") !== null,
+  remotePeers: <{id: string, device: string, approved: boolean, conn?: DataConnection, state: string}[]>[],
+  id: "",
+  currentDevice: "",
+  async start() {
+    this.id = crypto.randomUUID()
+    localStorage.setItem("syncDevice", this.currentDevice)
+    localStorage.setItem("syncId", this.id)
+    this.enableSync = true
+    await this.initPeer()
+  },
+  addPeer(id: string) {
+    if (this.peer === null) return
+    const pConn = this.setupConnection(this.peer.connect(id, {metadata: {device: this.currentDevice}}))
+    this.remotePeers.push({id: id, device: "", approved: true, conn: pConn, state: "INIT"})
+    this.savePeerList()
+  },
+  approvePeer(id: string) {
+    if (this.peer === null) return
+    const pConn = this.setupConnection(this.peer.connect(id, {metadata: {device: this.currentDevice}}))
+
+    this.remotePeers = this.remotePeers.map(x=>x.id === id ? {...x, conn: pConn, approved: true} : x)
+    this.savePeerList()
+
+  },
+  setupConnection(pConn: DataConnection) {
+    pConn.on('open', () => {
+      pConn.send(<SyncMessage>{type: "ident", origin: this.id})
+      const peer = this.remotePeers.find(x=>x.id === pConn.peer)
+      if (peer && peer.approved) pConn.send({type: "sync", origin: this.id})
+    })
+    pConn.on('data', async data => {
+      const decData = data as SyncMessage
+      console.log("Received data", decData, new TextDecoder().decode(decData.data))
+      if (this.doc === null) {
+        pConn.send(<SyncMessage>{type: "error", data: new TextEncoder().encode("EMPTY")})
+        return
+      }
+      switch(decData.type) {
+        case "ident": {
+          pConn.send(<SyncMessage>{type: "ident-ack", origin: this.id, data: new TextEncoder().encode(this.currentDevice)})
+          break;
+        }
+        case "ident-ack": {
+          const peer = this.remotePeers.find(x=>x.id === pConn.peer)
+          if (peer) peer.device = new TextDecoder().decode(decData.data)
+          break;
+        }
+        case "sync": {
+          const peer = this.remotePeers.find(x=>x.id === pConn.peer)
+          if(!peer) break;
+
+          peer.state = "SYNC_START"
+          if(!peer.approved) {
+            console.log("UNAPPROVED")
+            pConn.send(<SyncMessage>{type: "error", origin: this.id, data: new TextEncoder().encode("UNAPPROVED")})
+            return;
+          }
+
+          const upData = encodeStateVector(this.doc)
+          console.log("Sending state vector", upData)
+          pConn.send(<SyncMessage>{type: "state", origin: this.id, data: upData})
+          break;
+        }
+        case "state": {
+          if (!decData.data) {
+            pConn.send(<SyncMessage>{type: "error", origin: this.id, data: new TextEncoder().encode("No state data received")})
+            return;
+          }
+          const peer = this.remotePeers.find(x=>x.id === pConn.peer)
+          if(!peer) break;
+
+          peer.state = "SYNC_STATE"
+          if(!peer.approved) {
+            console.log("UNAPPROVED")
+            pConn.send(<SyncMessage>{type: "error", origin: this.id, data: new TextEncoder().encode("UNAPPROVED")})
+            return;
+          }
+
+          const upData = encodeStateAsUpdate(this.doc, new Uint8Array(decData.data))
+          console.log("Sending update", upData)
+          pConn.send(<SyncMessage>{type: "update", origin: this.id, data: upData})
+          break;
+        }
+        case "update": {
+          if (!decData.data) {
+            pConn.send(<SyncMessage>{type: "error", data: new TextEncoder().encode("No update data received")})
+            return;
+          }
+          const peer = this.remotePeers.find(x=>x.id === pConn.peer)
+          if(!peer) break;
+
+          peer.state = "SYNC_UPDATE"
+          if(!peer.approved) {
+            console.log("UNAPPROVED")
+            pConn.send(<SyncMessage>{type: "error", origin: this.id, data: new TextEncoder().encode("UNAPPROVED")})
+            return;
+          }
+
+          console.log("Applying update", decData.data)
+          applyUpdate(this.doc, new Uint8Array(decData.data), decData.origin)
+
+          const pData = this.doc.getMap("pulldata")
+
+          const characters = pData.get("characters") as AKEGachaCharacter[]
+          const weapons = pData.get("weapons") as AKEGachaWeapon[]
+          console.log(characters.length, weapons.length)
+
+          await db.clear("weapons")
+          await db.clear("characters")
+
+          await Promise.all(weapons.map(async (x)=>{
+            const tobj: AKEWeaponHistory = {
+              id: x.weaponId,
+              name: x.weaponName,
+              type: x.weaponType,
+              rarity: x.rarity,
+              poolId: x.poolId,
+              poolName: x.poolName,
+              pulledAt: Number(x.gachaTs),
+              seqId: Number(x.seqId)
+            }
+
+            await db.put("weapons", tobj)
+            return tobj
+          }))
+
+          await Promise.all(characters.map(async (x)=>{
+            const tobj: AKECharacterHistory = {
+              id: x.charId,
+              name: x.charName,
+              rarity: x.rarity,
+              poolId: x.poolId,
+              poolName: x.poolName,
+              pulledAt: Number(x.gachaTs),
+              seqId: Number(x.seqId),
+              isFree: x.isFree
+            }
+            await db.put("characters", tobj)
+            return tobj
+          }))
+
+          this.$dispatch("data-update")
+          break;
+        }
+        case "error": {
+          const peer = this.remotePeers.find(x=>x.id === pConn.peer)
+          if(!peer) break;
+          const errorData = new TextDecoder().decode(decData.data)
+          switch(errorData) {
+            case "UNAPPROVED":
+              peer.state = "UNAPPROVED"
+              pConn.close()
+              break;
+            default:
+              //@ts-ignore
+              ot.toast(`Error from peer ${peer.device} (${peer.id}): ${errorData}`)
+          }
+
+          break;
+        }
+
+      }
+    })
+
+    return pConn
+  },
+  removePeer(id: string) {
+    this.remotePeers.find(x=>x.id === id)?.conn?.close()
+    this.remotePeers = this.remotePeers.filter(x=>x.id !== id)
+    this.savePeerList()
+  },
+  async initPeer() {
+
+    this.doc = new Doc()
+    this.doc.on("update", () => {
+      if (this.doc === null) return
+      this.remotePeers.forEach(x=>x.approved && x.conn?.dataChannel?.readyState === "open" && x.conn?.send({type: "sync"}))
+    })
+
+    const arr = this.doc.getMap("pulldata")
+    const data = await getDataForBackupAndSync()
+    arr.set("characters", data.characters)
+    arr.set("weapons", data.weapons)
+
+    this.peer = new Peer(this.id, {debug: 3})
+    this.peer.on("open", (id) => {
+      localStorage.setItem("syncId", id)
+      console.log("PeerJS Connected")
+
+      for (let i = 0; i < this.remotePeers.length; i++) {
+        if (!this.peer || !this.remotePeers[i].approved) continue
+        this.remotePeers[i].conn = this.setupConnection(this.peer.connect(this.remotePeers[i].id, {metadata: {device: this.currentDevice}}))
+      }
+    });
+
+    this.peer.on("connection", conn => {
+      console.log("[SYNC] Connected to peer: " + conn.peer)
+      const rPeer = this.remotePeers.find(x=>x.id === conn.peer)
+      if (rPeer) {
+        rPeer.conn = this.setupConnection(conn)
+        return
+      }
+      //@ts-ignore oat API that is not typed
+      ot.toast(`A new connection from peer ${conn.metadata.device} (${conn.peer}) has been established. Please approve it to start syncing.`)
+      this.remotePeers.push({id: conn.peer, device: conn.metadata.device, approved: false, conn: this.setupConnection(conn), state: "INIT"})
+      this.savePeerList()
+    })
+
+    this.peer.on("disconnected", id => {
+      console.log("[SYNC] Disconnected from peer: " + id)
+      const peer = this.remotePeers.filter(x=>x.id === id)
+      if (!peer) return
+
+      this.remotePeers = this.remotePeers.filter(x=>x.id !== id)
+      this.remotePeers.push(peer[0])
+      this.savePeerList()
+    })
+
+    this.peer.on("error", err => {
+      console.error("[SYNC] Error: " + err)
+      switch(err.type) {
+        case "peer-unavailable":
+          const peer = this.remotePeers.find(x=>x.id === / (\S*)$/.exec(err.message)?.[1] || "")
+          if (peer) peer.conn = undefined
+          break;
+      }
+    })
+  },
+  savePeerList() {
+    localStorage.setItem("syncPeers", JSON.stringify(this.remotePeers.map(x=>({id: x.id, device: x.device, approved: x.approved}))))
+  },
+
+  async init() {
+    if ("userAgentData" in navigator) {
+      const heData = await (navigator.userAgentData as {getHighEntropyValues: (arr: string[]) => any}).getHighEntropyValues(["model"])
+      if (heData.model !== "") this.currentDevice = `${heData.model} ${heData.brands[0].brand} (${heData.platform})`
+      this.currentDevice = `${heData.brands[0].brand} (${heData.platform})`
+    }
+    else this.currentDevice = `${navigator.userAgent} (${navigator.platform})`
+
+    console.log("Try init sync")
+
+    if(localStorage.getItem("syncId") === null) return
+
+    this.id = localStorage.getItem("syncId") || ""
+    this.currentDevice = localStorage.getItem("syncDevice") || ""
+    this.remotePeers = JSON.parse(localStorage.getItem("syncPeers") || "[]")
+
+    await this.initPeer()
+    console.log("Sync init")
   }
 }))
 
@@ -292,7 +531,33 @@ async function loadData() {
     weaponPools: removeDupes(weapons.map(x=>({id: x.poolId, name: x.poolName}))),
     characterPools: removeDupes(characters.map(x=>({id: x.poolId, name: x.poolName}))),
   }
+}
 
+async function getDataForBackupAndSync() {
+  const charArr = (await db.getAll("characters")).map(x=>(<AKEGachaCharacter>{
+    charId: x.id,
+    charName: x.name,
+    gachaTs: x.pulledAt.toString(),
+    isFree: x.isFree,
+    isNew: false,
+    poolId: x.poolId,
+    poolName: x.poolName,
+    rarity: x.rarity,
+    seqId: x.seqId.toString()
+  }))
+  const weapArr = (await db.getAll("weapons")).map(x=>(<AKEGachaWeapon>{
+    weaponId: x.id,
+    weaponName: x.name,
+    weaponType: x.type,
+    gachaTs: x.pulledAt.toString(),
+    isNew: false,
+    poolId: x.poolId,
+    poolName: x.poolName,
+    rarity: x.rarity,
+    seqId: x.seqId.toString()
+  }))
+
+  return {characters: charArr, weapons: weapArr}
 }
 
 function removeDupes(arr: any[]) {
