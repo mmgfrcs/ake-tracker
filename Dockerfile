@@ -7,7 +7,7 @@ WORKDIR /app
 
 FROM base AS build
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm build
+RUN pnpm build && cp docs/* ./dist
 
 FROM pierrezemb/gostatic
 COPY --from=build /app/dist/ /srv/http
