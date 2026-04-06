@@ -81,14 +81,79 @@
       <button value="ok">Update Now</button>
     </footer>
   </dialog>
-  <main class="p-4 flex-1" x-data="pulldata" x-init="await initDb()">
-    <div role="alert" data-variant="warning" x-data="persistence" x-show="!(await isPersistent())" class="mb-4">
+  <main class="p-4 flex-1" x-data="pulldata" x-on:data-update.window="await init()">
+    <div role="alert" data-variant="warning" x-data="persistence" x-show="!isPersistent" class="mb-4">
       <strong>Data Persistence disabled</strong> 
       <span class="flex-1">Pull Data might be lost when the site is unused or when the browser wants to free up
         storage. Back up your data regularly by clicking on the top right <i data-lucide="download" width="16"
                                                                      height="16"></i> button</span>
       <button class="textbutton ghost p-0"  x-on:click="await showPersistence()">Enable</button>
     </div>
+    <details class="mb-4" x-data="sync">
+      <summary>
+        <span class="flex gap-4">
+          Data Sync
+          <span class="badge" x-show="enableSync" x-text="id">-</span>
+
+        </span>
+
+      </summary>
+      <div x-show="!enableSync">
+        <p>Data Sync is currently disabled. Data Sync allows you to sync your pull data from this device to another, allowing you to back up your pull data to another device without needing to download/upload backup files.</p>
+        <p>Data Sync uses WebRTC to facilitate direct browser-to-browser data exchange and it is P2P with no intermediary server involved.</p>
+        <p>Before activating Data Sync, note the following:</p>
+        <ul>
+          <li>In order for devices to find each other, a signalling server is required. The app uses PeerJS Server to act as a signalling server.</li>
+          <li>Due to the above, activating Data Sync will <strong>expose your IP address to the signalling server</strong>, and the server will <a href="https://github.com/peers/peerjs-server/blob/master/PRIVACY.md">retain your IP address for 60 seconds</a> after the last connection attempt.</li>
+          <li>In cases where direct connections are unavailable, Data Sync can fail. <strong>Do not rely on the reliability of the Data Sync service</strong></li>
+          <li>Related to the above, <strong>Data Sync is not a backup</strong> and should not be your only backup source.</li>
+        </ul>
+        <p>Before activating Data Sync, set a peer name. This will appear on other devices.</p>
+        <form x-on:submit.prevent="currentDevice = new FormData($el).get('dname'); await start()"
+              class="flex flex-col gap-4">
+          <input type="text" name="dname" required placeholder="Peer Name"/>
+          <button type="submit">Activate</button>
+        </form>
+
+      </div>
+      <div x-show="enableSync">
+        <h3>Current Device</h3>
+        <article class="card flex-1">
+          <header>
+            <h4 x-text="currentDevice">0</h4>
+            <p x-text="id"></p>
+          </header>
+        </article>
+        <h3>Peers</h3>
+        <h4>Add Peer</h4>
+        <form x-on:submit.prevent="addPeer(new FormData($el).get('pid'))" class="flex gap-4 mb-4">
+          <fieldset class="group w-full">
+            <input type="text" name="pid" required placeholder="Peer ID"/>
+            <button type="submit">Add</button>
+          </fieldset>
+        </form>
+        <p x-show="remotePeers.length === 0">No peers found</p>
+        <template x-for="pr in remotePeers">
+          <article class="card flex flex-1 flex-col md:flex-row gap-4 items-center">
+            <span x-text="pr.id" class="font-bold"></span>
+            <span x-text="pr.device"></span>
+            <span class="badge danger" x-show="!pr.approved">Unapproved</span>
+            <span class="badge danger" x-show="pr.state === 'UNAPPROVED'">Unapproved on Remote</span>
+            <span class="badge" x-show="pr.approved && pr.state === 'INIT'">Initializing</span>
+            <span class="badge warning" x-show="pr.approved && pr.state === 'SYNC_START'">Start Sync</span>
+            <span class="badge warning" x-show="pr.approved && pr.state === 'SYNC_STATE'">Syncing</span>
+            <span class="badge success"  x-show="pr.approved && pr.state === 'SYNC_UPDATE'">Up-to-date</span>
+            <span class="flex-1"></span>
+            <button x-show="!pr.conn && pr.approved" x-on:click="approvePeer(pr.id)">Connect</button>
+            <button x-show="!pr.approved" x-on:click="approvePeer(pr.id)">Approve</button>
+            <button data-variant="danger" x-on:click="removePeer(pr.id)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </article>
+        </template>
+        <button data-variant="danger" class="mt-4">Disable Sync</button>
+      </div>
+    </details>
     <details class="mb-4">
       <summary>Submit New Pulls</summary>
       <ul>

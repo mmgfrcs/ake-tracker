@@ -13,7 +13,7 @@ Requires pnpm v10 and node v24
 - Build it with `pnpm build`
 - The site is available at `dist` folder as a single HTML file, ready to open and use
 
-## Usage
+## Features & Usage
 
 After building the site, open the resulting `index.html` file on your browser, which should land you on the site homepage. You can ignore all the other files in the folder; those are not required for a functioning site, but you may want them if you are going to deploy it as it is deployed on Github Pages.
 
@@ -42,3 +42,12 @@ Data is by default not permanently persisted. It will be removed when the site i
 For Firefox users, simply click "Enable" on the Data Persistence Disabled banner, click "Yes" on the dialog that appears, then allow the permission when the browser asks you.
 
 For Chromium-based browser users, however, you need to add the site to your home screen before the browser will approve the permission. Just click on "Install App" on your browser and install it to your home screen.
+
+### Data Sync
+
+The Data Sync feature allows you to synchronize your pull data across different devices. It uses WebRTC to 
+facilitate browser-to-browser communication, the same technology used for Zoom calls.
+
+To enable it, open the Data Sync section, type a name for the current device (can be anything), and click Activate.
+
+Please note that this feature is not a backup replacement. Please back up your data regularly.
