@@ -217,8 +217,8 @@ Alpine.data("pulldata", () => ({
     // TODO: Typing
     weapons: <Partial<Record<string, AKEWeaponHistory[]>>>{},
     chars: <Partial<Record<string, AKECharacterHistory[]>>>{},
-    weaponPools: <{id: string, name: string}[]>[],
-    charPools: <{id: string, name: string}[]>[],
+    weaponPools: <{id: string, name: string, pity: number}[]>[],
+    charPools: <{id: string, name: string, pity: number}[]>[],
     weaponStats: {
       pullNo: 0,
       currencySpent: 0,
@@ -528,8 +528,8 @@ async function loadData() {
   return {
     weapons: sortKeys(Object.groupBy<string, AKEWeaponHistory>(weapons.sort((a, b)=>b.pulledAt - a.pulledAt || b.seqId - a.seqId), x=>x.poolId)),
     characters: sortKeys(Object.groupBy<string, AKECharacterHistory>(characters.sort((a, b)=>b.pulledAt - a.pulledAt || b.seqId - a.seqId), x=>x.poolId)),
-    weaponPools: removeDupes(weapons.map(x=>({id: x.poolId, name: x.poolName}))),
-    characterPools: removeDupes(characters.map(x=>({id: x.poolId, name: x.poolName}))),
+    weaponPools: removeDupes(weapons.map(x=>({id: x.poolId, name: x.poolName}))).map(x=>({...x, pity: calculateCurrentPity(weapons, x.id)})),
+    characterPools: removeDupes(characters.map(x=>({id: x.poolId, name: x.poolName}))).map(x=>({...x, pity: calculateCurrentPity(characters, x.id), guarantee: calculateCurrentPityGuarantee(characters, x.id)})),
   }
 }
 
@@ -600,6 +600,28 @@ function calculateAvgPity(data: Partial<Record<any, any[]>>) {
 
   return poolAverages.length === 0 ? 0 :
       poolAverages.reduce((sum, avg) => sum + avg, 0) / poolAverages.length;
+}
+
+function calculateCurrentPity(data: (AKECharacterHistory|AKEWeaponHistory)[], banner: string) {
+  if(!data || data.length === 0) return 0;
+
+  const sortedPulls = data.filter(x=>x.poolId === banner).sort((a, b) => b.pulledAt - a.pulledAt)
+  let last6StarIdx = sortedPulls.findIndex(x=>x.rarity === 6)
+  if(last6StarIdx === -1) last6StarIdx = sortedPulls.length;
+
+  last6StarIdx -= sortedPulls.slice(0, last6StarIdx).filter(x=>("isFree" in x) && x.isFree).length
+  return last6StarIdx
+}
+
+function calculateCurrentPityGuarantee(data: (AKECharacterHistory|AKEWeaponHistory)[], banner: string) {
+  if(!data || data.length === 0) return 0;
+
+  const sortedPulls = data.filter(x=>x.poolId === banner).sort((a, b) => b.pulledAt - a.pulledAt)
+  let last6StarIdx = sortedPulls.findIndex(x=>x.rarity === 6 && !['chr_0025_ardelia', 'chr_0026_lastrite', 'chr_0029_pograni', 'chr_0009_azrila', 'chr_0015_lifeng'].includes(x.id))
+  if(last6StarIdx === -1) last6StarIdx = sortedPulls.length;
+
+  last6StarIdx -= sortedPulls.slice(0, last6StarIdx).filter(x=>("isFree" in x) && x.isFree).length
+  return last6StarIdx
 }
 
 function calculate5050WinOdds(data: Partial<Record<string, AKECharacterHistory[]>>) {

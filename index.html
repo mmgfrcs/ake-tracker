@@ -236,6 +236,27 @@
           </div>
           <template x-for="pool in Object.keys(pulls.chars)">
             <div role="tabpanel" class="list" x-data="{ getRecord() { return pulls.chars[pool].filter(x=>this.rarity.includes(x.rarity)) }, rarity: [6] }">
+              <div x-show="Object.keys(pulls.chars).length > 0" class="flex md:flex-row flex-col gap-4 mb-4">
+                <div class="card stat mb-4">
+                  <header>
+                    <h3 x-text="pulls.chars[pool].length">0</h3>
+                    <p>Pulls</p>
+                  </header>
+                </div>
+                <div class="card stat mb-4">
+                  <header>
+                    <h3 x-text="pulls.charPools.find(x=>x.id === pool).pity">0</h3>
+                    <p>Current 80-pull Pity</p>
+                  </header>
+                </div>
+                <div class="card stat mb-4" x-show="!['standard','beginner'].includes(pool)">
+                  <header>
+                    <h3 x-text="pulls.charPools.find(x=>x.id === pool).guarantee">0</h3>
+                    <p>Current 120-pull Pity</p>
+                  </header>
+                </div>
+              </div>
+
               <div class="flex flex-row gap-4 items-center mb-4">
                 <template x-for="(char, idx) in pulls.chars[pool].filter(x=>x.rarity===6)" x-bind:key="char.seqId">
                   <div class="flex flex-col gap-1 items-center" x-data="{ currentIndex: pulls.chars[pool].length - pulls.chars[pool].indexOf(char), nextChar: pulls.chars[pool].find((x, i)=>x.rarity === char.rarity && i > pulls.chars[pool].indexOf(char)), getNextIndex() { return this.nextChar ? pulls.chars[pool].length - pulls.chars[pool].indexOf(this.nextChar) : 0 }, getSeq() { return this.currentIndex - this.getNextIndex()}}" >
