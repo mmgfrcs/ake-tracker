@@ -8,11 +8,10 @@ env:
   FLY_REGION: sin
   FLY_ORG: personal
 
-
-
 jobs:
   preview-deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event.action != 'closed' }}
 
     # Only run one deployment at a time per PR.
     concurrency:
@@ -25,16 +24,28 @@ jobs:
       url: ${{ steps.deploy.outputs.url }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
         with:
             lfs: true
       - name: Deploy Preview
         id: deploy
-        if: ${{ github.event.action != 'closed' }}
         uses: superfly/fly-pr-review-apps@1.5.0
-      - name: Clean up GitHub environment
-        uses: strumwolf/delete-deployment-environment@v2
-        if: ${{ github.event.action == 'closed' }}
+  preview-cleanup:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.action == 'closed' }}
+
+    steps:
+      - name: Remove Preview
+        uses: superfly/fly-pr-review-apps@1.5.0
+      - name: Get GitHub App token
+        uses: actions/create-github-app-token@a0de6af83968303c8c955486bf9739a57d23c7f1
+        id: get-token
         with:
-            token: ${{ secrets.GITHUB_TOKEN }}
-            environment: pr-${{ github.event.number }}
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+      - name: Clean up GitHub environment
+        uses: strumwolf/delete-deployment-environment@v3
+        with:
+          token: ${{ steps.get-token.outputs.token }}
+          environment: pr-${{ github.event.number }}
+          ref: ${{ github.ref_name }}
