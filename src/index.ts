@@ -654,8 +654,7 @@ const updateSW = registerSW({
       dialog.showModal()
     })
 
-    if (decision === "ok") location.reload()
+    if (decision === "ok") await updateSW()
   },
 })
 
-await updateSW()
