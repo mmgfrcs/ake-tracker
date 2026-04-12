@@ -16,7 +16,9 @@ function Get-AKERecords {
     [string]$Token, 
 
     [Parameter(Mandatory)]
-    [string]$ServerID
+    [string]$ServerID,
+
+    [int]$TargetSeqId
   )
 
   $reqQuery = @{
@@ -71,11 +73,6 @@ function Get-AKERecords {
     $seq = 0 # Seq number for next page
 
     while($true) {
-      if ($Type -eq 0) {
-        Write-Host "    Seq $seq"
-      } else {
-        Write-Host "    Seq $seq pool $pl"
-      }
       
       # Cleanup sequence ID
       if ($seq -ne 0) {
@@ -91,23 +88,40 @@ function Get-AKERecords {
       $uriBuilder.Query = $sq.ToString()
       $resp = Invoke-WebRequest -Uri $uriBuilder.Uri.OriginalString -UserAgent "Mozilla/5.0" -UseBasicParsing
       $respJson = $resp | ConvertFrom-Json
+
+      $seq = [int]$respJson.data.list[-1].seqId
+
+      # Skip when seqId lower than target
+      if ($seq -ne 0 -and $seq -le $TargetSeqId) {
+        if ($Type -eq 0) {
+          Write-Host "    Seq $seq (SKIP)" -ForegroundColor Red
+        } else {
+          Write-Host "    Seq $seq pool $pl (SKIP)" -ForegroundColor Red
+        }
+        break;
+      }
+
+      if ($Type -eq 0) {
+        Write-Host "    Seq $seq"
+      } else {
+        Write-Host "    Seq $seq pool $pl"
+      }
       
       $rdata += $respJson.data.list
 
       if (-not $respJson.data.hasMore) {
-        if ($seq -gt 6) {
-          if ($Type -eq 0) {
-            Write-Host "`nWARNING: $($Type.ToString()) banner has more data before the end of sequence. Some pull data has been deleted. This can be normal, but if this is the first time you run this script, know that some pull data has been lost." -ForegroundColor Yellow
-          } else {
-            Write-Host "`nWARNING: $($Type.ToString()) banner and $pl pool has no more data before the end of sequence. Some pull data has been deleted. This can be normal, but if this is the first time you run this script, know that some pull data has been lost." -ForegroundColor Yellow
-          }
-        }
         break
       }
 
-      $seq = $respJson.data.list[-1].seqId
-
       Start-Sleep -Milliseconds 250
+    }
+  }
+
+  if ($seq -gt 6 -and $TargetSeqId -eq 0) {
+    if ($Type -eq 0) {
+      Write-Host "`nWARNING: $($Type.ToString()) banner has more data before the end of sequence. Some pull data has been deleted. This can be normal, but if this is the first time you run this script, know that some pull data has been lost." -ForegroundColor Yellow
+    } else {
+      Write-Host "`nWARNING: $($Type.ToString()) banner and $pl pool has no more data before the end of sequence. Some pull data has been deleted. This can be normal, but if this is the first time you run this script, know that some pull data has been lost." -ForegroundColor Yellow
     }
   }
 
@@ -141,7 +155,7 @@ foreach ($line in $lines) {
 
   $fullUrl = $match.Value
   Write-Host "`nURL Found:" -ForegroundColor Green
-  Write-Host "  $fullUrl" -ForegroundColor Cyan
+  Write-Host $fullUrl
 
   # Get query string
   $uri = [System.Uri]$fullUrl
@@ -153,10 +167,39 @@ foreach ($line in $lines) {
     'characters'  = $()
   }
 
-  # Get token and server from query string
-  $data.weapons = Get-AKERecords -Type Weapon -Token $params["token"] -ServerID $params["server_id"]
-  $data.characters = Get-AKERecords -Type Character -Token $params["token"] -ServerID $params["server_id"]
+  $recFile = "./akerecord.json"
 
+  # Try loading existing akerecord.json to do partial update
+  if (-not (Test-Path -Path $recFile)) {
+      $highestCharSeqId = 0
+      $highestWeaponSeqId = 0
+      $jsonData = @{
+        'weapons'      = $()
+        'characters'  = $()
+      }
+      Write-Host "Existing akerecord.json file not found. Starting from scratch." -ForegroundColor Yellow
+  } else {
+    $jsonContent = Get-Content -Path $recFile -Raw
+    $jsonData = $jsonContent | ConvertFrom-Json
+
+    $highestCharSeqId = ($jsonData.characters | ForEach-Object { [int]$_.seqId } | Measure-Object -Maximum).Maximum
+    if (-not $highestCharSeqId) {
+        $highestCharSeqId = 0
+    }
+
+    $highestWeaponSeqId = ($jsonData.weapons | ForEach-Object { [int]$_.seqId } | Measure-Object -Maximum).Maximum
+    if (-not $highestWeaponSeqId) {
+        $highestWeaponSeqId = 0
+    }
+
+    Write-Host "Existing akerecord.json file found. Grabbing character records newer than seqId $highestCharSeqId and weapon records newer than seqId $highestWeaponSeqId." -ForegroundColor Green
+  }
+
+  # Get token and server from query string
+  $data.weapons = Get-AKERecords -Type Weapon -Token $params["token"] -ServerID $params["server_id"] -TargetSeqId $highestWeaponSeqId
+  $data.characters = Get-AKERecords -Type Character -Token $params["token"] -ServerID $params["server_id"] -TargetSeqId $highestCharSeqId
+  $data.weapons += $jsonData.weapons
+  $data.characters += $jsonData.characters
   [System.IO.File]::WriteAllText("./akerecord.json", ($data | ConvertTo-Json -Compress), [System.Text.Encoding]::UTF8)
 
   Write-Host "`nDone! Record saved to $($PWD.Path + "/akerecord.json")" -ForegroundColor Green
