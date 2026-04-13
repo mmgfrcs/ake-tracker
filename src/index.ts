@@ -76,6 +76,11 @@ for(let assetPth in assetWeapMod) {
 //@ts-ignore
 window.Alpine = Alpine
 
+Alpine.data("meta", () => ({
+  appVer: import.meta.env.VITE_APP_VERSION,
+  gameVer: "1.1",
+}))
+
 Alpine.data("persistence", () => ({
   isPersistent: false,
   async showPersistence() {

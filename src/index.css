@@ -2,6 +2,7 @@ body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hi
 
 .inline-flex { display: inline-flex; }
 .flex-1 { flex: 1; }
+.flex-0 { flex: 0; }
 .flex-wrap {flex-wrap: wrap;}
 .m-0 { margin: 0;}
 .p-0 { padding: 0;}
@@ -19,6 +20,7 @@ body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hi
 .h-full { height: 100%; }
 .w-full { width: 100%; }
 .font-bold { font-weight: bold; }
+.vertical-middle { vertical-align: middle; }
 .icontext-center { 
   height: 4rem; 
   text-align: center; 
