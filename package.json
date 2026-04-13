@@ -1,7 +1,7 @@
 {
   "name": "endfield-tracker",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,6 +15,7 @@
     "idb": "^8.0.3",
     "lucide": "^0.577.0",
     "peerjs": "^1.5.5",
+    "sharp": "^0.34.5",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-pwa": "^1.2.0",
@@ -22,5 +23,5 @@
     "workbox-window": "^7.4.0",
     "yjs": "^13.6.30"
   },
-  "packageManager": "pnpm@10.28.2"
+  "packageManager": "pnpm@10.33.0"
 }
