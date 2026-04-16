@@ -163,8 +163,8 @@ foreach ($line in $lines) {
   $params = [System.Web.HttpUtility]::ParseQueryString($queryString)
 
   $data = @{
-    'weapons'      = $()
-    'characters'  = $()
+    'weapons'     = @()
+    'characters'  = @()
   }
 
   $recFile = "./akerecord.json"
@@ -174,8 +174,8 @@ foreach ($line in $lines) {
       $highestCharSeqId = 0
       $highestWeaponSeqId = 0
       $jsonData = @{
-        'weapons'      = $()
-        'characters'  = $()
+        'weapons'      = @()
+        'characters'  = @()
       }
       Write-Host "Existing akerecord.json file not found. Starting from scratch." -ForegroundColor Yellow
   } else {
