@@ -26,9 +26,9 @@ To upload your pulls, you need to grab your pulls from the Arknights: Endfield s
 You can download the script from the repo, right-click on it and click Run with PowerShell &gt; Open (if you're on Windows), or run the following command on the PowerShell terminal:
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/mmgfrcs/ake-tracker/49a54f7aa1941192ce75e70acf99fccd50ee200d/get-record.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/mmgfrcs/ake-tracker/9fb63b409cecb681afa62ccc893113e03757f0ae/get-record.ps1 | iex
 ```
-> Pinned to commit 49a54f7aa1941192ce75e70acf99fccd50ee200d (Add partial update logic in the PowerShell script) as of writing this README file
+> Pinned to commit 9fb63b409cecb681afa62ccc893113e03757f0ae (Fix Array Init in Script) as of writing this README file
 
 > [!WARNING]
 > Make sure the URL you use in the command is *pinned* to a commit like the above example
