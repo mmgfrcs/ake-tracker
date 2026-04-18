@@ -115,6 +115,7 @@ Alpine.data("pulldata", () => ({
       this.pulls.weapons = data.weapons
       this.pulls.chars = data.characters
       this.pulls.weaponPools = data.weaponPools
+      console.log(data.characterPools)
       this.pulls.charPools = data.characterPools
       this.calculateStats()
       console.log("Load success")
@@ -455,7 +456,7 @@ Alpine.data("sync", () => ({
     arr.set("characters", data.characters)
     arr.set("weapons", data.weapons)
 
-    this.peer = new Peer(this.id, {debug: 3})
+    this.peer = new Peer(this.id)
     this.peer.on("open", (id) => {
       localStorage.setItem("syncId", id)
       console.log("PeerJS Connected")
@@ -576,9 +577,19 @@ function removeDupes(arr: any[]) {
 }
 
 function sortKeys(obj: Partial<Record<string, any>>) {
-  return Object.keys(obj)
-    .sort((a, b)=>obj[a].length > 0 && obj[b].length > 0 && obj[a][0]["pulledAt"] && obj[b][0]["pulledAt"] ? obj[b][0]["pulledAt"] - obj[a][0]["pulledAt"] : a > b ? -1 : 1) // Sorts keys ('fruit', 'vegetable') alphabetically
-    .reduce((acc, key) => {
+  console.log(obj)
+  let keys = Object.keys(obj)
+    .filter(key => key != "standard" && key != "beginner")
+    .sort((a, b)=> {
+      console.log(a, b)
+      if (obj[a].length === 0 || obj[b].length === 0) return 0
+      if (a === "standard" || a === "beginner" || b === "standard" || b === "beginner") return 1
+      return obj[a][0]["pulledAt"] && obj[b][0]["pulledAt"] ? obj[b][0]["pulledAt"] - obj[a][0]["pulledAt"] : a > b ? -1 : 1
+    })
+
+  keys.push(...Object.keys(obj).filter(key => key === "standard" || key === "beginner"))
+
+  return keys.reduce((acc, key) => {
       acc[key] = obj[key];
       return acc;
     }, <{[x: string]: any}>{});
@@ -607,10 +618,10 @@ function calculateAvgPity(data: Partial<Record<any, any[]>>) {
       poolAverages.reduce((sum, avg) => sum + avg, 0) / poolAverages.length;
 }
 
-function calculateCurrentPity(data: (AKECharacterHistory|AKEWeaponHistory)[], banner: string) {
+function calculateCurrentPity(data: (AKECharacterHistory|AKEWeaponHistory)[], _: string) {
   if(!data || data.length === 0) return 0;
 
-  const sortedPulls = data.filter(x=>x.poolId === banner).sort((a, b) => b.pulledAt - a.pulledAt)
+  const sortedPulls = data.filter(x=>x.poolId !== "standard" && x.poolId !== "beginner").sort((a, b) => b.pulledAt - a.pulledAt)
   let last6StarIdx = sortedPulls.findIndex(x=>x.rarity === 6)
   if(last6StarIdx === -1) last6StarIdx = sortedPulls.length;
 

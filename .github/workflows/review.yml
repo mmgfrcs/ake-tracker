@@ -9,7 +9,17 @@ env:
   FLY_ORG: personal
 
 jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: '0'
+      - name: Get Version
+        run: git describe --tags --long --always | sed -E 's/^([0-9]+\.[0-9]+)\.?[0-9]*-([0-9]+)/\1\.\2/; s/\-g[0-9a-f]+//; s/^/APPVER=/' >> $GITHUB_OUTPUT
   preview-deploy:
+    needs: get-version
     runs-on: ubuntu-latest
     if: ${{ github.event.action != 'closed' }}
 
@@ -34,14 +44,15 @@ jobs:
           default: '0.0'
       - name: Get App Version from Git Describe
         env:
-          APPVER: ${{ steps.ghd.outputs.describe }}
+          APPVER: ${{ needs.get-version.outputs.APPVER }}
         run: echo $APPVER | sed -E 's/^([0-9]+\.[0-9]+)\.?[0-9]*-([0-9]+)/\1\.\2/; s/\-g[0-9a-f]+//; s/^/VITE_APP_VERSION=/' >> $GITHUB_ENV
       - name: Deploy Preview
         id: deploy
         uses: superfly/fly-pr-review-apps@1.5.0
         with:
-          build_args: "APPVER=${{ env.VITE_APP_VERSION }}"
+          build_args: "APPVER=${{ needs.get-version.outputs.APPVER }}"
   preview-cleanup:
+    needs: get-version
     runs-on: ubuntu-latest
     if: ${{ github.event.action == 'closed' }}
     steps:
