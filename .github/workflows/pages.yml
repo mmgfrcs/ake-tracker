@@ -24,14 +24,20 @@ concurrency:
 
 jobs:
   get-version:
+    outputs:
+      APPVER: ${{ steps.getver.outputs.APPVER }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          fetch-depth: '0'
+          fetch-depth: 0
+          fetch-tags: true
       - name: Get Version
-        run: git describe --tags --long --always | sed -E 's/^([0-9]+\.[0-9]+)\.?[0-9]*-([0-9]+)/\1\.\2/; s/\-g[0-9a-f]+//; s/^/APPVER=/' >> $GITHUB_OUTPUT
+        id: getver
+        run: |
+          git describe --tags --long --always | sed -E 's/^([0-9]+\.[0-9]+)\.?[0-9]*-([0-9]+)/\1\.\2/; s/\-g[0-9a-f]+//; s/^/APPVER=/' >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
   deploy:
     needs: get-version
     environment:
