@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local files
+getimg.js
+nameimg.js
+akerecord.json
+akerecord-ori.json
+pnpm-workspace.yaml
