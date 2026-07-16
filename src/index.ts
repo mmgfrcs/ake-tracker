@@ -87,8 +87,8 @@ for(let assetPth in assetBanMod) {
 window.Alpine = Alpine
 
 Alpine.data("meta", () => ({
-  appVer: import.meta.env.VITE_APP_VERSION ?? "Unknown",
-  gameVer: "1.2",
+  appVer: import.meta.env.VITE_APP_VERSION,
+  gameVer: "1.4",
 }))
 
 Alpine.data("persistence", () => ({
