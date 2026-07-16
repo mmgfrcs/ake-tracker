@@ -11,6 +11,7 @@ import {registerSW} from 'virtual:pwa-register'
 import {type DataConnection, Peer} from 'peerjs'
 import {applyUpdate, Doc, encodeStateAsUpdate, encodeStateVector} from 'yjs'
 import type {SyncMessage} from "./models/sync.ts";
+import poolInfo from './pools.json';
 
 createIcons({icons: {
   Download,
@@ -71,6 +72,15 @@ for(let assetPth in assetWeapMod) {
   if (!name) continue;
 
   await db.put("assets", {id: name[0], value: await assetWeapMod[assetPth]() as string})
+}
+
+const assetBanMod = import.meta.glob("/src/assets/banners/*.webp", {import: "default"})
+
+for(let assetPth in assetBanMod) {
+  const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
+  if (!name) continue;
+
+  await db.put("assets", {id: name[0]+".webp", value: await assetBanMod[assetPth]() as string})
 }
 
 //@ts-ignore
@@ -223,8 +233,8 @@ Alpine.data("pulldata", () => ({
     // TODO: Typing
     weapons: <Partial<Record<string, AKEWeaponHistory[]>>>{},
     chars: <Partial<Record<string, AKECharacterHistory[]>>>{},
-    weaponPools: <{id: string, name: string, pity: number}[]>[],
-    charPools: <{id: string, name: string, pity: number}[]>[],
+    weaponPools: <{id: string, name: string, info?: typeof poolInfo[0], pity: number}[]>[],
+    charPools: <{id: string, name: string, info?: typeof poolInfo[0], pity: number}[]>[],
     weaponStats: {
       pullNo: 0,
       currencySpent: 0,
@@ -534,8 +544,25 @@ async function loadData() {
   return {
     weapons: sortKeys(Object.groupBy<string, AKEWeaponHistory>(weapons.sort((a, b)=>b.pulledAt - a.pulledAt || b.seqId - a.seqId), x=>x.poolId)),
     characters: sortKeys(Object.groupBy<string, AKECharacterHistory>(characters.sort((a, b)=>b.pulledAt - a.pulledAt || b.seqId - a.seqId), x=>x.poolId)),
-    weaponPools: removeDupes(weapons.map(x=>({id: x.poolId, name: x.poolName}))).map(x=>({...x, pity: calculateCurrentPity(weapons, x.id)})),
-    characterPools: removeDupes(characters.map(x=>({id: x.poolId, name: x.poolName}))).map(x=>({...x, pity: calculateCurrentPity(characters, x.id), guarantee: calculateCurrentPityGuarantee(characters, x.id)})),
+    weaponPools: removeDupes((await Promise.all(weapons.map(async x=>{
+      const inf = poolInfo.find(y=>y.name === x.poolName)
+      if(inf) inf.image = (await db.get("assets", inf.image))?.value ?? ""
+      return {
+        id: x.poolId,
+        name: x.poolName,
+        info: inf
+      }
+    })))).map(x=>({...x, pity: calculateCurrentPity(weapons, x.id)})),
+
+    characterPools: removeDupes((await Promise.all(characters.map(async x=>{
+      const inf = poolInfo.find(y=>y.name === x.poolName)
+      if(inf) inf.image = (await db.get("assets", inf.image))?.value ?? ""
+      return {
+        id: x.poolId,
+        name: x.poolName,
+        info: inf
+      }
+    })))).map(x=>({...x, pity: calculateCurrentPity(characters, x.id), guarantee: calculateCurrentPityGuarantee(characters, x.id)})),
   }
 }
 

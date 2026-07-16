@@ -1,0 +1,132 @@
+[
+  {
+    "version": "1.4-2",
+    "pool_gacha_type": "char",
+    "name": "Good Morning From Your Dawnstar",
+    "type": "special",
+    "up_name": "Liino",
+    "image": "",
+    "start_date": 1786324800,
+    "end_date": 1788139200
+  },
+  {
+    "version": "1.4-1",
+    "pool_gacha_type": "char",
+    "name": "North Yearns the Rift Vigile",
+    "type": "special",
+    "up_name": "Arcane",
+    "image": "",
+    "start_date": 1784260800,
+    "end_date": 1786324740
+  },
+  {
+    "version": "1.3-2",
+    "pool_gacha_type": "char",
+    "name": "Expunger of Sin",
+    "type": "special",
+    "up_name": "Camille",
+    "image": "",
+    "start_date": 1782475200,
+    "end_date": 1784116800
+  },
+  {
+    "version": "1.3-1",
+    "pool_gacha_type": "char",
+    "name": "Fists of No Regrets",
+    "type": "special",
+    "up_name": "Mi Fu",
+    "image": "",
+    "start_date": 1780660800,
+    "end_date": 1782475200
+  },
+  {
+    "version": "1.2-2",
+    "pool_gacha_type": "char",
+    "name": "Fest of Brilliance",
+    "type": "joint",
+    "up_name": "Laevateinn, Gilberta",
+    "image": "",
+    "start_date": 1778846400,
+    "end_date": 1780660800
+  },
+  {
+    "version": "1.2-1",
+    "pool_gacha_type": "char",
+    "name": "Thunder of Renewal",
+    "type": "special",
+    "up_name": "Zhuang Fangyi",
+    "image": "121.webp",
+    "start_date": 1776423600,
+    "end_date": 1779447600
+  },
+  {
+    "version": "1.1-2",
+    "pool_gacha_type": "char",
+    "name": "Wolf Pearl",
+    "type": "special",
+    "up_name": "Rossi",
+    "image": "112.webp",
+    "start_date": 1774782000,
+    "end_date": 1776423600
+  },
+  {
+    "version": "1.1-1",
+    "pool_gacha_type": "char",
+    "name": "River's Daughter",
+    "type": "special",
+    "up_name": "Tangtang",
+    "image": "111.webp",
+    "start_date": 1773313200,
+    "end_date": 1774782000
+  },
+  {
+    "version": "1.0-3",
+    "pool_gacha_type": "char",
+    "name": "Hues of Passion",
+    "type": "special",
+    "up_name": "Yvonne",
+    "image": "103.webp",
+    "start_date": 1771930800,
+    "end_date": 1773313200
+  },
+  {
+    "version": "1.0-2",
+    "pool_gacha_type": "char",
+    "name": "The Floaty Messenger",
+    "type": "special",
+    "up_name": "Gilberta",
+    "image": "102.webp",
+    "start_date": 1770462000,
+    "end_date": 1771930800
+  },
+  {
+    "version": "1.0-1",
+    "pool_gacha_type": "char",
+    "name": "Scars of the Forge",
+    "type": "special",
+    "up_name": "Laevateinn",
+    "image": "101.webp",
+    "start_date": 1769068800,
+    "end_date": 1770462000
+  },
+  {
+    "version": "1.0-1",
+    "pool_gacha_type": "char",
+    "name": "Basic Headhunting",
+    "type": "standard",
+    "up_name": "",
+    "image": "",
+    "start_date": 1769068800,
+    "end_date": 9999999999
+  },
+  {
+    "version": "1.0-1",
+    "pool_gacha_type": "char",
+    "name": "New Horizons",
+    "type": "beginner",
+    "up_name": "",
+    "image": "",
+    "start_date": 1769068800,
+    "end_date": 9999999999
+  }
+]
