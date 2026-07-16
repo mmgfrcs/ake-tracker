@@ -239,10 +239,10 @@
                   <button x-on:click="selected = idx" x-data="{poolData: pulls.charPools.find(x=>x.id === pool)}" x-bind:style="{'background-image': `url(${poolData.info.image})`}" x-bind:class="selected === idx ? 'bg-banner-selected' : ''" class="card bg-banner w-full flex flex-col items-start p-4">
                     <span class="text-xl font-bold" x-text="poolData.name + (poolData.info.up_name ? ` (${poolData.info.up_name})` : '')"></span>
                     <span>
-                      <span x-text="poolData.info.type === 'special' ? 'Limited' : poolData.info.type === 'standard' ? 'Standard' : 'Beginner'"></span>
-                      •
-                      <span x-show="poolData.info && poolData.info.type === 'special'" x-text="new Date(poolData.info.start_date*1000).toDateString() + ' - ' + new Date(poolData.info.end_date*1000).toDateString()"></span>
-                      <span x-show="poolData.info && poolData.info.type !== 'special'">Indefinite</span>
+                      <span x-show="poolData.info" x-text="poolData.info?.type === 'joint' ? 'Joint' : poolData.info?.type === 'special' ? 'Limited' : poolData.info?.type === 'standard' ? 'Standard' : 'Beginner'"></span>
+                      <span x-show="poolData.info">•</span>
+                      <span x-show="poolData.info && ['special', 'joint'].includes(poolData.info.type)" x-text="new Date(poolData.info.start_date*1000).toDateString() + ' - ' + new Date(poolData.info.end_date*1000).toDateString()"></span>
+                      <span x-show="poolData.info && !['special', 'joint'].includes(poolData.info.type)">Indefinite</span>
                       <span x-show="!poolData.info">Unknown</span>
                     </span>
 
@@ -255,7 +255,7 @@
             <div x-show="selected === idx" x-data="{ poolData: pulls.charPools.find(x=>x.id === pool), getRecord() { return pulls.chars[pool].filter(x=>this.rarity.includes(x.rarity)) }, rarity: [6] }">
               <h3>
                 <span x-text="poolData.name"></span>
-                <span class="text-lg" x-show="poolData.info" x-text="poolData.info.up_name + ' ' + (poolData.info.type === 'special' ? 'Limited Banner' : poolData.info.type === 'standard' ? 'Standard Banner' : 'Beginner Banner')"></span>
+                <span class="text-lg" x-show="poolData.info" x-text="poolData.info.up_name + ' ' + (poolData.info.type === 'joint' ? 'Joint Banner' : poolData.info.type === 'special' ? 'Limited Banner' : poolData.info.type === 'standard' ? 'Standard Banner' : 'Beginner Banner')"></span>
               </h3>
               <div x-show="Object.keys(pulls.chars).length > 0" class="flex md:flex-row flex-col gap-4 mb-4">
                 <div class="card stat mb-4">
@@ -376,10 +376,10 @@
                   <button x-on:click="selected = idx" x-data="{poolData: pulls.weaponPools.find(x=>x.id === pool)}" x-bind:style="{'background-image': poolData.info ? `url(${poolData.info.image})` : ''}" x-bind:class="selected === idx ? 'bg-banner-selected' : ''" class="card bg-banner w-full flex flex-col items-start p-4">
                     <span class="text-xl font-bold" x-text="poolData.name + (poolData.info ? ` (${poolData.info.up_name})` : '')"></span>
                     <span>
-                      <span x-show="poolData.info" x-text="poolData.info?.type === 'special' ? 'Limited' : poolData.info?.type === 'standard' ? 'Standard' : 'Beginner'"></span>
+                      <span x-show="poolData.info" x-text="poolData.info?.type === 'joint' ? 'Joint' : poolData.info?.type === 'special' ? 'Limited' : poolData.info?.type === 'standard' ? 'Standard' : 'Beginner'"></span>
                       <span x-show="poolData.info">•</span>
-                      <span x-show="poolData.info && poolData.info.type === 'special'" x-text="new Date(poolData.info.start_date*1000).toDateString() + ' - ' + new Date(poolData.info.end_date*1000).toDateString()"></span>
-                      <span x-show="poolData.info && poolData.info.type !== 'special'">Indefinite</span>
+                      <span x-show="poolData.info && ['special', 'joint'].includes(poolData.info.type)" x-text="new Date(poolData.info.start_date*1000).toDateString() + ' - ' + new Date(poolData.info.end_date*1000).toDateString()"></span>
+                      <span x-show="poolData.info && !['special', 'joint'].includes(poolData.info.type)">Indefinite</span>
                       <span x-show="!poolData.info">Unknown</span>
                     </span>
 
