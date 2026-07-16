@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [
     viteSingleFile(),
     VitePWA({
+      registerType: "prompt",
       manifest: {
         "name": "Arknights: Endfield Pull Tracker",
         "theme_color": "#574747",
