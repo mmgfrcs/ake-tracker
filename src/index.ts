@@ -78,7 +78,7 @@ window.Alpine = Alpine
 
 Alpine.data("meta", () => ({
   appVer: import.meta.env.VITE_APP_VERSION,
-  gameVer: "1.3",
+  gameVer: "1.4",
 }))
 
 Alpine.data("persistence", () => ({
