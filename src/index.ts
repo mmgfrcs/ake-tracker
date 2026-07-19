@@ -125,7 +125,6 @@ Alpine.data("pulldata", () => ({
       this.pulls.weapons = data.weapons
       this.pulls.chars = data.characters
       this.pulls.weaponPools = data.weaponPools
-      console.log(data.characterPools)
       this.pulls.charPools = data.characterPools
       this.calculateStats()
       console.log("Load success")
@@ -604,11 +603,9 @@ function removeDupes(arr: any[]) {
 }
 
 function sortKeys(obj: Partial<Record<string, any>>) {
-  console.log(obj)
   let keys = Object.keys(obj)
     .filter(key => key != "standard" && key != "beginner")
     .sort((a, b)=> {
-      console.log(a, b)
       if (obj[a].length === 0 || obj[b].length === 0) return 0
       if (a === "standard" || a === "beginner" || b === "standard" || b === "beginner") return 1
       return obj[a][0]["pulledAt"] && obj[b][0]["pulledAt"] ? obj[b][0]["pulledAt"] - obj[a][0]["pulledAt"] : a > b ? -1 : 1

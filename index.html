@@ -231,7 +231,7 @@
           </header>
         </article>
 
-        <div class="min-h-0 pool-grid" x-show="Object.keys(pulls.chars).length > 0" x-data="{selected: 0}">
+        <div class="min-h-0 pool-grid" x-show="Object.keys(pulls.chars).length > 0" x-data="{selected: 0, rarity: [6]}">
           <aside class="h-initial">
             <ul>
               <template x-for="(pool, idx) in Object.keys(pulls.chars)">
@@ -252,7 +252,7 @@
             </ul>
           </aside>
           <template x-for="(pool, idx) in Object.keys(pulls.chars)">
-            <div x-show="selected === idx" x-data="{ poolData: pulls.charPools.find(x=>x.id === pool), getRecord() { return pulls.chars[pool].filter(x=>this.rarity.includes(x.rarity)) }, rarity: [6] }">
+            <div x-show="selected === idx" x-data="{ poolData: pulls.charPools.find(x=>x.id === pool), getRecord() { return pulls.chars[pool].filter(x=>this.rarity.includes(x.rarity)) } }">
               <h3>
                 <span x-text="poolData.name"></span>
                 <span class="text-lg" x-show="poolData.info" x-text="poolData.info.up_name + ' ' + (poolData.info.type === 'joint' ? 'Joint Banner' : poolData.info.type === 'special' ? 'Limited Banner' : poolData.info.type === 'standard' ? 'Standard Banner' : 'Beginner Banner')"></span>
@@ -368,7 +368,7 @@
           </header>
         </article>
 
-        <div x-show="Object.keys(pulls.weapons).length > 0" class="min-h-0 pool-grid" x-data="{selected: 0}">
+        <div x-show="Object.keys(pulls.weapons).length > 0" class="min-h-0 pool-grid" x-data="{selected: 0, rarity: [6]}">
           <aside class="h-initial">
             <ul>
               <template x-for="(pool, idx) in Object.keys(pulls.weapons)">
@@ -389,7 +389,7 @@
             </ul>
           </aside>
           <template x-for="(pool, idx) in Object.keys(pulls.weapons)">
-            <div x-show="selected === idx" class="list" x-data="{ poolData: pulls.weaponPools.find(x=>x.id === pool), getRecord() { return pulls.weapons[pool].filter(x=>this.rarity.includes(x.rarity)) }, rarity: [6] }">
+            <div x-show="selected === idx" class="list" x-data="{ poolData: pulls.weaponPools.find(x=>x.id === pool), getRecord() { return pulls.weapons[pool].filter(x=>this.rarity.includes(x.rarity)) } }">
               <h3>
                 <span x-text="poolData.name"></span>
               </h3>
