@@ -5,7 +5,7 @@
     "name": "Good Morning From Your Dawnstar",
     "type": "special",
     "up_name": "Liino",
-    "image": "",
+    "image": "142.webp",
     "start_date": 1786324800,
     "end_date": 1788139200
   },
@@ -15,7 +15,7 @@
     "name": "North Yearns the Rift Vigile",
     "type": "special",
     "up_name": "Arcane",
-    "image": "",
+    "image": "141.webp",
     "start_date": 1784260800,
     "end_date": 1786324740
   },
@@ -25,7 +25,7 @@
     "name": "Expunger of Sin",
     "type": "special",
     "up_name": "Camille",
-    "image": "",
+    "image": "132.webp",
     "start_date": 1782475200,
     "end_date": 1784116800
   },
@@ -35,7 +35,7 @@
     "name": "Fists of No Regrets",
     "type": "special",
     "up_name": "Mi Fu",
-    "image": "",
+    "image": "131.webp",
     "start_date": 1780660800,
     "end_date": 1782475200
   },
@@ -45,7 +45,7 @@
     "name": "Fest of Brilliance",
     "type": "joint",
     "up_name": "Laevateinn, Gilberta",
-    "image": "",
+    "image": "122.webp",
     "start_date": 1778846400,
     "end_date": 1780660800
   },
