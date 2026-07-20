@@ -28,6 +28,7 @@ body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hi
 .min-h-0 { min-height: 0; }
 .font-bold { font-weight: bold; }
 .vertical-middle { vertical-align: middle; }
+.rounded { border-radius: var(--space-4);}
 .bg-banner { background-size: cover; background-position-x: 70%; background-color: light-dark(#444444, #222222); color: white; background-blend-mode: overlay; transition: all 200ms ease-in-out; }
 .bg-banner-selected { background-color: light-dark(#666666, #444444); color: light-dark(var(--primary-foreground), var(--secondary-foreground)); }
 /* Pool Grid */
@@ -107,8 +108,8 @@ body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hi
   inset-block-end: -35px;
 }
 
-[data-tooltip]:has(.lucide-refresh-cw):after {
-  inset-inline-start: -110%;
+[data-tooltip]:has(.lucide-download):after {
+  inset-inline-start: -80%;
 }
 
 [data-sidebar] > nav > ul {

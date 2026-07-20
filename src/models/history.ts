@@ -13,6 +13,12 @@ export interface AKECharacterHistory {
 
 export type AKEWeaponHistory = Omit<AKECharacterHistory, "isFree"> & {type: string}
 
+export interface AKEListCount {
+    name: string
+    count: number
+    rarity: number
+}
+
 export interface AKEDBSchema extends DBSchema {
     "assets": {
         key: string,

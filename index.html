@@ -177,6 +177,45 @@
                 x-bind:disabled="!urlForm.enableSubmit" type="submit">Load File</button>
       </form>
     </details>
+    <details class="mb-4">
+      <summary>Pull Statistics</summary>
+      <h3>Owned 6-star Characters</h3>
+      <div x-show="characters.filter(x=>x.rarity===6).length > 0" class="flex flex-wrap gap-4">
+        <template x-for="(chars, idx) in characters.filter(x=>x.rarity===6)">
+          <div class="flex flex-col gap-1 items-center">
+            <img class="rounded icon-lg" x-bind:src="await getIcon(chars)" x-bind:alt="chars.name" />
+            <span class="badge" x-bind:class="chars.count >= 6 ? 'success' : ''" x-text="'x' + chars.count">1</span>
+          </div>
+        </template>
+      </div>
+      <h3>Other Owned Characters</h3>
+      <div x-show="characters.filter(x=>x.rarity!==6).length > 0" class="flex flex-wrap gap-4">
+        <template x-for="(chars, idx) in characters.filter(x=>x.rarity!==6)">
+          <div class="flex flex-col gap-1 items-center">
+            <img class="rounded icon-lg" x-bind:src="await getIcon(chars)" x-bind:alt="chars.name" />
+            <span class="badge" x-bind:class="chars.count >= 6 ? 'success' : ''" x-text="'x' + chars.count">1</span>
+          </div>
+        </template>
+      </div>
+      <h3>Owned 6-star Weapons</h3>
+      <div x-show="weapons.filter(x=>x.rarity===6).length > 0" class="flex flex-wrap gap-4">
+        <template x-for="(chars, idx) in weapons.filter(x=>x.rarity===6)">
+          <div class="flex flex-col gap-1 items-center">
+            <img class="rounded icon-lg" x-bind:src="await getIcon(chars)" x-bind:alt="chars.name" />
+            <span class="badge" x-bind:class="chars.count >= 6 ? 'success' : ''" x-text="'x' + chars.count">1</span>
+          </div>
+        </template>
+      </div>
+      <h3>Other Owned Weapons</h3>
+      <div x-show="weapons.filter(x=>x.rarity!==6).length > 0" class="flex flex-wrap gap-4">
+        <template x-for="(chars, idx) in weapons.filter(x=>x.rarity!==6)">
+          <div class="flex flex-col gap-1 items-center">
+            <img class="rounded icon-lg" x-bind:src="await getIcon(chars)" x-bind:alt="chars.name" />
+            <span class="badge" x-bind:class="chars.count >= 6 ? 'success' : ''" x-text="'x' + chars.count">1</span>
+          </div>
+        </template>
+      </div>
+    </details>
 
     <ot-tabs>
       <div role="tablist">

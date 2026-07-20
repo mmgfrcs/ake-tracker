@@ -1,11 +1,11 @@
 import '@knadh/oat/oat.min.css';
 import './index.css'
+import '@knadh/oat/oat.min.js'
 import * as idb from 'idb'
 import Alpine from 'alpinejs'
 import icon from './assets/icon.png'
 import type {AKEGachaCharacter, AKEGachaRecord, AKEGachaWeapon} from './models/record';
-import type {AKECharacterHistory, AKEDBSchema, AKEWeaponHistory} from "./models/history.ts";
-import '@knadh/oat/oat.min.js'
+import type {AKECharacterHistory, AKEDBSchema, AKEListCount, AKEWeaponHistory} from "./models/history.ts";
 import {createIcons, Download, Trash2} from 'lucide';
 import {registerSW} from 'virtual:pwa-register'
 import {type DataConnection, Peer} from 'peerjs'
@@ -127,7 +127,15 @@ Alpine.data("pulldata", () => ({
       this.pulls.weaponPools = data.weaponPools
       this.pulls.charPools = data.characterPools
       this.calculateStats()
-      console.log("Load success")
+      this.characters = Object.values(Object.values(data.characters).flatMap(x=>x).sort((a, b) => a.rarity > b.rarity ? -1 : 1).reduce((p, n) => {
+        p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity}
+        return p
+      }, <{[x: string]: AKEListCount}>{}))
+      this.weapons = Object.values(Object.values(data.weapons).flatMap(x=>x).sort((a, b) => a.rarity > b.rarity ? -1 : 1).reduce((p, n) => {
+        p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity}
+        return p
+      }, <{[x: string]: AKEListCount}>{}))
+      console.log("Load success", this.pulls.chars)
       
       this.$nextTick(() => {
         const tabEl = document.getElementsByTagName('ot-tabs')
@@ -172,7 +180,7 @@ Alpine.data("pulldata", () => ({
 
       const fileCt = JSON.parse(await file.text()) as AKEGachaRecord
 
-      this.pulls.weapons = Object.groupBy(await Promise.all(fileCt.weapons.map(async (x)=>{
+      const weapArr = await Promise.all(fileCt.weapons.map(async (x)=>{
         const tobj: AKEWeaponHistory = {
           id: x.weaponId,
           name: x.weaponName,
@@ -187,9 +195,11 @@ Alpine.data("pulldata", () => ({
         await db.delete("weapons", Number(x.seqId))
         await db.put("weapons", tobj)
         return tobj
-      })), x=>x.poolId)
+      }))
 
-      this.pulls.chars = Object.groupBy(await Promise.all(fileCt.characters.map(async (x)=>{
+      this.pulls.weapons = Object.groupBy(weapArr, x=>x.poolId)
+
+      const charArr = await Promise.all(fileCt.characters.map(async (x)=>{
         const tobj: AKECharacterHistory = {
           id: x.charId,
           name: x.charName,
@@ -203,7 +213,19 @@ Alpine.data("pulldata", () => ({
         await db.delete("characters", Number(x.seqId))
         await db.put("characters", tobj)
         return tobj
-      })), x=>x.poolId)
+      }))
+
+      this.pulls.chars = Object.groupBy(charArr, x=>x.poolId)
+
+      this.characters = Object.values(charArr.toSorted((a, b) => a.rarity > b.rarity ? -1 : 1).reduce((p, n) => {
+        p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity}
+        return p
+      }, <{[x: string]: AKEListCount}>{}))
+
+      this.weapons = Object.values(weapArr.toSorted((a, b) => a.rarity > b.rarity ? -1 : 1).reduce((p, n) => {
+        p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity}
+        return p
+      }, <{[x: string]: AKEListCount}>{}))
 
       this.calculateStats()
 
@@ -225,11 +247,12 @@ Alpine.data("pulldata", () => ({
     
   },
   async getIcon(char: AKECharacterHistory | AKEWeaponHistory) {
-    return (await db.get("assets", char.name.replaceAll(" ", "").toLowerCase()))?.value
+    return (await db.get("assets", char.name.replaceAll(/[^a-z0-9]/gi, "").replaceAll(" ", "").toLowerCase()))?.value
   },
+  characters: <AKEListCount[]>[],
+  weapons: <AKEListCount[]>[],
   // Actual data
   pulls: {
-    // TODO: Typing
     weapons: <Partial<Record<string, AKEWeaponHistory[]>>>{},
     chars: <Partial<Record<string, AKECharacterHistory[]>>>{},
     weaponPools: <{id: string, name: string, info?: typeof poolInfo[0], pity: number}[]>[],
@@ -539,10 +562,10 @@ async function loadData() {
 
   const weapons = await db.getAll("weapons") as AKEWeaponHistory[]
   const characters = await db.getAll("characters") as AKECharacterHistory[]
-  
+
   return {
-    weapons: sortKeys(Object.groupBy<string, AKEWeaponHistory>(weapons.sort((a, b)=>b.pulledAt - a.pulledAt || b.seqId - a.seqId), x=>x.poolId)),
-    characters: sortKeys(Object.groupBy<string, AKECharacterHistory>(characters.sort((a, b)=>b.pulledAt - a.pulledAt || b.seqId - a.seqId), x=>x.poolId)),
+    weapons: sortKeys(Map.groupBy<string, AKEWeaponHistory>(weapons.sort((a, b)=>b.pulledAt - a.pulledAt || b.seqId - a.seqId), x=>x.poolId)),
+    characters: sortKeys(Map.groupBy<string, AKECharacterHistory>(characters.sort((a, b)=>b.pulledAt - a.pulledAt || b.seqId - a.seqId), x=>x.poolId)),
     weaponPools: removeDupes((await Promise.all(weapons.map(async x=>{
       const inf = poolInfo.find(y=>y.name === x.poolName)
       if(inf) inf.image = (await db.get("assets", inf.image))?.value ?? ""
@@ -602,21 +625,24 @@ function removeDupes(arr: any[]) {
   });
 }
 
-function sortKeys(obj: Partial<Record<string, any>>) {
-  let keys = Object.keys(obj)
-    .filter(key => key != "standard" && key != "beginner")
+function sortKeys<T extends AKECharacterHistory | AKEWeaponHistory>(obj: Map<string, T[]>) {
+  let keys = Array.from(obj.keys())
+    .filter(key => key != "standard" && key != "beginner" && !key.includes("weaponbox_constant"))
     .sort((a, b)=> {
-      if (obj[a].length === 0 || obj[b].length === 0) return 0
-      if (a === "standard" || a === "beginner" || b === "standard" || b === "beginner") return 1
-      return obj[a][0]["pulledAt"] && obj[b][0]["pulledAt"] ? obj[b][0]["pulledAt"] - obj[a][0]["pulledAt"] : a > b ? -1 : 1
+      if(!obj.has(a) || !obj.has(b)) return 0
+      if (obj.get(a)?.length === 0 || obj.get(b)?.length === 0) return 0
+      if (a === "standard" || a === "beginner" || b === "standard" || b === "beginner" || a.includes("weaponbox_constant") || b.includes("weaponbox_constant")) return 1
+      return obj.get(a)?.at(0)?.pulledAt && obj.get(b)?.at(0)?.pulledAt ? (obj.get(b)?.at(0)?.pulledAt ?? 0) - (obj.get(a)?.at(0)?.pulledAt ?? 0) : a > b ? -1 : 1
     })
 
-  keys.push(...Object.keys(obj).filter(key => key === "standard" || key === "beginner"))
+  keys.push(...Array.from(obj.keys()).filter(key => key === "standard" || key === "beginner" || key.includes("constant")))
+
+  console.log(keys)
 
   return keys.reduce((acc, key) => {
-      acc[key] = obj[key];
+      acc[key] = obj.get(key)!;
       return acc;
-    }, <{[x: string]: any}>{});
+    }, <{[x: string]: T[]}>{});
 }
 
 function calculateAvgPity(data: Partial<Record<any, any[]>>) {
