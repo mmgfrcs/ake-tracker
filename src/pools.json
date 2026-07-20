@@ -128,5 +128,175 @@
     "image": "",
     "start_date": 1769068800,
     "end_date": 9999999999
+  },
+  {
+    "name": "Bedazzled Issue",
+    "start_date": 1786248000,
+    "end_date": 1788062400,
+    "image": "",
+    "pool_gacha_type": "weapon",
+    "type": "special",
+    "version": "1.4-2",
+    "up_name": "Bedazzling Night Debut"
+  },
+  {
+    "name": "Military Grade Issue",
+    "start_date": 1784174400,
+    "end_date": 1786248000,
+    "image": "141w.webp",
+    "pool_gacha_type": "weapon",
+    "type": "special",
+    "version": "1.4-1",
+    "up_name": "Type 42: Solemn Phalanx"
+  },
+  {
+    "name": "Crimson Hued Issue",
+    "start_date": 1782446400,
+    "end_date": 1784174400,
+    "image": "132w.webp",
+    "pool_gacha_type": "weapon",
+    "type": "special",
+    "version": "1.3-2",
+    "up_name": "Blessing of Lustrous Carmine"
+  },
+  {
+    "name": "Skarlet Knot Issue",
+    "start_date": 1780632000,
+    "end_date": 1782446400,
+    "image": "131w.webp",
+    "pool_gacha_type": "weapon",
+    "type": "special",
+    "version": "1.3-1",
+    "up_name": "Amaranthine Tassel"
+  },
+  {
+    "name": "Smelting Fire Issue",
+    "start_date": 1778731200,
+    "end_date": 1780027200,
+    "image": "122w2.webp",
+    "pool_gacha_type": "weapon",
+    "type": "special",
+    "version": "1.2-2",
+    "up_name": "Forgeborn Scathe"
+  },
+  {
+    "name": "Swift Walker Issue",
+    "start_date": 1778731200,
+    "end_date": 1780027200,
+    "image": "122w1.webp",
+    "pool_gacha_type": "weapon",
+    "type": "special",
+    "version": "1.2-2",
+    "up_name": "Delivery Guaranteed"
+  },
+  {
+    "name": "Drifting Raft Issue",
+    "start_date": 1776398400,
+    "end_date": 1778212800,
+    "image": "121w.webp",
+    "pool_gacha_type": "weapon",
+    "type": "special",
+    "version": "1.2-1",
+    "up_name": "Lone Barge"
+  },
+  {
+    "name": "Scarlet Pearl Issue",
+    "start_date": 1774756800,
+    "end_date": 1776398400,
+    "image": "112w.webp",
+    "pool_gacha_type": "weapon",
+    "type": "special",
+    "version": "1.1-2",
+    "up_name": "Lupine Scarlet"
+  },
+  {
+    "name": "Budding Anew Issue",
+    "start_date": 1773288000,
+    "end_date": 1774756800,
+    "image": "111w.webp",
+    "pool_gacha_type": "weapon",
+    "type": "special",
+    "version": "1.1-1",
+    "up_name": "Brigand's Calling"
+  },
+  {
+    "name": "Graffiti Issue",
+    "start_date": 1771905600,
+    "end_date": 1773288000,
+    "image": "103w.webp",
+    "pool_gacha_type": "weapon",
+    "type": "special",
+    "version": "1.0-3",
+    "up_name": "Artzy Tyrannical"
+  },
+  {
+    "name": "Express Delivery Issue",
+    "start_date": 1770436800,
+    "end_date": 1771905600,
+    "image": "102w.webp",
+    "pool_gacha_type": "weapon",
+    "type": "special",
+    "version": "1.0-2",
+    "up_name": "Delivery Guaranteed"
+  },
+  {
+    "name": "Smelting Forge Issue",
+    "start_date": 1769054400,
+    "end_date": 1770436800,
+    "image": "101w.webp",
+    "pool_gacha_type": "weapon",
+    "type": "special",
+    "version": "1.0-1",
+    "up_name": "Forgeborn Scathe"
+  },
+  {
+    "name": "Solid Ice Issue",
+    "start_date": 1769054400,
+    "end_date": 9999999999,
+    "image": "",
+    "pool_gacha_type": "weapon",
+    "type": "standard",
+    "version": "1.0-1",
+    "up_name": "Khravengger"
+  },
+  {
+    "name": "Cosmic Voice Issue",
+    "start_date": 1769054400,
+    "end_date": 9999999999,
+    "image": "",
+    "pool_gacha_type": "weapon",
+    "type": "standard",
+    "version": "1.0-1",
+    "up_name": "Dreams of the Starry Beach"
+  },
+  {
+    "name": "Far Expedition Issue",
+    "start_date": 1769054400,
+    "end_date": 9999999999,
+    "image": "",
+    "pool_gacha_type": "weapon",
+    "type": "standard",
+    "version": "1.0-1",
+    "up_name": "Never Rest"
+  },
+  {
+    "name": "Rising Mount Issue",
+    "start_date": 1769054400,
+    "end_date": 9999999999,
+    "image": "",
+    "pool_gacha_type": "weapon",
+    "type": "standard",
+    "version": "1.0-1",
+    "up_name": "Mountain Bearer"
+  },
+  {
+    "name": "Thunderous Peal Issue",
+    "start_date": 1769054400,
+    "end_date": 9999999999,
+    "image": "",
+    "pool_gacha_type": "weapon",
+    "type": "standard",
+    "version": "1.0-1",
+    "up_name": "Thunderberge"
   }
 ]

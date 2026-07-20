@@ -33,7 +33,7 @@ body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hi
 /* Pool Grid */
 .pool-grid {
   display: grid;
-  grid-template-columns: 24rem 1fr;
+  grid-template-columns: 28rem 1fr;
   padding-block: calc(var(--space-2) * 1.5);
   gap: var(--space-8);
 }
@@ -127,5 +127,12 @@ body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hi
 @media all and (width >= 60rem) {
   .sm\:flex-row {
     flex-direction: row;
+  }
+}
+
+@media all and (width < 60rem) {
+  .pool-grid {
+    display: flex;
+    flex-direction: column-reverse;
   }
 }
