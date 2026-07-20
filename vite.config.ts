@@ -8,6 +8,9 @@ export default defineConfig({
     viteSingleFile(),
     VitePWA({
       registerType: "prompt",
+      workbox: {
+        maximumFileSizeToCacheInBytes: 10000000
+      },
       manifest: {
         "name": "Arknights: Endfield Pull Tracker",
         "theme_color": "#574747",
