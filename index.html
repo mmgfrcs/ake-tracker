@@ -179,7 +179,13 @@
     </details>
     <details class="mb-4">
       <summary>Pull Statistics</summary>
-      <h3>Owned 6-star Characters</h3>
+      <article class="card stat flex-1" x-show="Object.keys(pulls.chars).length == 0 && Object.keys(pulls.weapons).length == 0">
+        <header>
+          <h3>No Pulls Loaded</h3>
+          <p>Remember to Import your pulls using the Submit New Pulls above!</p>
+        </header>
+      </article>
+      <h3 x-show="characters.filter(x=>x.rarity===6).length > 0">Owned 6-star Characters</h3>
       <div x-show="characters.filter(x=>x.rarity===6).length > 0" class="flex flex-wrap gap-4">
         <template x-for="(chars, idx) in characters.filter(x=>x.rarity===6)">
           <div class="flex flex-col gap-1 items-center">
@@ -188,7 +194,7 @@
           </div>
         </template>
       </div>
-      <h3>Other Owned Characters</h3>
+      <h3 x-show="characters.filter(x=>x.rarity!==6).length > 0">Other Owned Characters</h3>
       <div x-show="characters.filter(x=>x.rarity!==6).length > 0" class="flex flex-wrap gap-4">
         <template x-for="(chars, idx) in characters.filter(x=>x.rarity!==6)">
           <div class="flex flex-col gap-1 items-center">
@@ -197,7 +203,7 @@
           </div>
         </template>
       </div>
-      <h3>Owned 6-star Weapons</h3>
+      <h3 x-show="weapons.filter(x=>x.rarity===6).length > 0">Owned 6-star Weapons</h3>
       <div x-show="weapons.filter(x=>x.rarity===6).length > 0" class="flex flex-wrap gap-4">
         <template x-for="(chars, idx) in weapons.filter(x=>x.rarity===6)">
           <div class="flex flex-col gap-1 items-center">
@@ -206,7 +212,7 @@
           </div>
         </template>
       </div>
-      <h3>Other Owned Weapons</h3>
+      <h3 x-show="weapons.filter(x=>x.rarity!==6).length > 0">Other Owned Weapons</h3>
       <div x-show="weapons.filter(x=>x.rarity!==6).length > 0" class="flex flex-wrap gap-4">
         <template x-for="(chars, idx) in weapons.filter(x=>x.rarity!==6)">
           <div class="flex flex-col gap-1 items-center">
