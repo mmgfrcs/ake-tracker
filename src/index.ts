@@ -668,10 +668,10 @@ function calculateAvgPity(data: Partial<Record<any, any[]>>) {
       poolAverages.reduce((sum, avg) => sum + avg, 0) / poolAverages.length;
 }
 
-function calculateCurrentPity(data: (AKECharacterHistory|AKEWeaponHistory)[], _: string) {
+function calculateCurrentPity(data: (AKECharacterHistory|AKEWeaponHistory)[], banner: string) {
   if(!data || data.length === 0) return 0;
 
-  const sortedPulls = data.filter(x=>x.poolId !== "standard" && x.poolId !== "beginner").sort((a, b) => b.pulledAt - a.pulledAt)
+  let sortedPulls = data.filter(x=>banner.includes("special") ? x.poolId.includes("special") : x.poolId.includes("joint")).filter(x=>x.poolId !== "standard" && x.poolId !== "beginner").sort((a, b) => b.pulledAt - a.pulledAt)
   let last6StarIdx = sortedPulls.findIndex(x=>x.rarity === 6)
   if(last6StarIdx === -1) last6StarIdx = sortedPulls.length;
 
