@@ -234,6 +234,7 @@ Alpine.data("exporter", () => ({
     const dialogForm = dialog.getElementsByTagName("form")[0]
 
     dialogForm.addEventListener("submit", async e => {
+      //@ts-ignore e here has the correct typeE
       await this.exportAsPng(e)
     }, {once: true})
     dialog.showModal()
