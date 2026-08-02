@@ -36,34 +36,8 @@ function Get-AKERecords {
     $uriBuilder = [System.UriBuilder]"https://ef-webview.gryphline.com/api/record/weapon"
     $pools = @('weap123')
   } else {
-    # Character banners require a pool type. We grab the pool type first
     $uriBuilder = [System.UriBuilder]"https://ef-webview.gryphline.com/api/record/char"
-    try {
-      Invoke-WebRequest -Uri "https://ef-webview.gryphline.com/api/record/char?lang=en-us&token=A&server_id=$ServerID" -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue -UseBasicParsing
-    }
-    catch {
-      # Different way to do it based on Powershell version
-      if ($PSVersionTable.PSVersion.Major -lt 6) {
-        # For Windows PowerShell < 6
-        $stream = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
-        $stream.BaseStream.Position = 0
-        if (($stream.ReadToEnd() | ConvertFrom-Json).message[-1] -match 'values:\s*(.+)') {
-          $pools = $Matches[1] -split ',\s*'
-        } else {
-          $pools = @()
-        }
-        $stream.Close()
-      }
-      else {
-        # For PowerShell Core/7+
-        if ((ConvertFrom-Json $_).message[-1] -match 'values:\s*(.+)') {
-          $pools = $Matches[1] -split ',\s*'
-        } else {
-          $pools = @()
-        }
-      }
-    }
-    
+    $pools = @('E_CharacterGachaPoolType_Standard', 'E_CharacterGachaPoolType_Beginner', 'E_CharacterGachaPoolType_Special', 'E_CharacterGachaPoolType_Joint')
   }
 
   foreach ($pl in $pools) {
