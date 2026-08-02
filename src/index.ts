@@ -6,16 +6,18 @@ import Alpine from 'alpinejs'
 import icon from './assets/icon.png'
 import type {AKEGachaCharacter, AKEGachaRecord, AKEGachaWeapon} from './models/record';
 import type {AKECharacterHistory, AKEDBSchema, AKEListCount, AKEWeaponHistory} from "./models/history.ts";
-import {createIcons, Download, Trash2} from 'lucide';
+import {createIcons, Download, ImageDown, Trash2} from 'lucide';
 import {registerSW} from 'virtual:pwa-register'
 import {type DataConnection, Peer} from 'peerjs'
 import {applyUpdate, Doc, encodeStateAsUpdate, encodeStateVector} from 'yjs'
 import type {SyncMessage} from "./models/sync.ts";
 import poolInfo from './pools.json';
+import satori from 'satori'
 
 createIcons({icons: {
   Download,
-  Trash2
+  Trash2,
+  ImageDown
 }})
 
 const link = document.querySelector("link[rel~='icon']");
@@ -83,8 +85,331 @@ for(let assetPth in assetBanMod) {
   await db.put("assets", {id: name[0]+".webp", value: await assetBanMod[assetPth]() as string})
 }
 
+interface SatoriElementProps {
+  style?: Record<string, any>;
+  children?: SatoriElement[] | string | number | boolean | null | undefined;
+  [key: string]: any;
+}
+
+interface SatoriElement {
+  type: string,
+  props: SatoriElementProps
+}
+
+function createElement(type: string, props: SatoriElementProps, ...children: (SatoriElement | undefined)[]): SatoriElement;
+function createElement(type: string, props: SatoriElementProps, children: string | number | boolean | null | undefined): SatoriElement;
+function createElement(type: string, props: SatoriElementProps, ...children: (SatoriElement | string | number | boolean | null | undefined)[]): SatoriElement {
+  props = props || {}
+
+  if (children.length === 0) return {
+    type: type,
+    props: props
+  } 
+
+  if (children.length === 1 && !(children[0] instanceof Element)) {
+    const child = children[0] as string | number | boolean | null | undefined;
+    // handle single primitive child
+    return {
+      type: type,
+      props: {...props, children: child}
+    }
+  }
+
+  let flatChildren = (children as SatoriElement[]).flat(Infinity).filter((c) => c !== undefined);
+
+  return {
+    type: type,
+    props: {...props, children: flatChildren}
+  }
+}
+
+async function ownershipList(data: AKEListCount[], isCharacter: boolean = true) {
+  return createElement(
+    "div", 
+    {
+      style: {
+        display: "flex",
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: "16px",
+        alignItems: "flex-end",
+      }
+    },
+    ...(await Promise.all(data.slice(0, 40)
+      .map(async x=>createElement(
+        "div", 
+        {
+          style: {
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-end",
+            position: "relative",
+            borderRadius: 10,
+            overflow: "hidden",
+            gap: 6,
+            padding: "6px",
+            background: x.rarity === 6 ? "linear-gradient(160deg, #584926 0%, #262626 100%)" : "linear-gradient(160deg, #262626 0%, #161616 100%)"
+          }
+        }, 
+        createElement(
+          "img",
+          {
+            src: x && (await db.get("assets", x.name.replaceAll(/[^a-z0-9]/gi, "").replaceAll(" ", "").toLowerCase()))?.value,
+            alt: "Image",
+            width: x.rarity === 6 ? 96 : 72,
+            height: x.rarity === 6 ? 96 : 72,
+            style: {
+              borderTopLeftRadius: 10,
+              borderTopRightRadius: 10,
+              overflow: "hidden"
+            }
+          }
+        ), 
+        createElement(
+          "span",
+          {
+            style: {
+              fontSize: 17,
+              textOverflow: 'ellipsis',
+              overflow: "hidden",
+              whiteSpace: 'nowrap',
+              width: x.rarity === 6 ? 96 : 72,
+            }
+          },
+          x.name
+        ), 
+        createElement(
+          "div",
+          {
+            style: {
+              display: "flex",
+              position: "absolute",
+              bottom: 30,
+              right: x.rarity === 6 ? 4 : 2,
+              fontSize: 18,
+              padding: 4,
+              borderRadius: 8,
+              backgroundColor: "#212121"
+            }
+          },
+          isCharacter ? `P${x.count-1}` : x.count
+        )
+        )
+      )
+    )),
+    data.length > 40 ? createElement(
+      "div",
+      {
+        style: {
+          fontSize: 30,
+          alignSelf: "center",
+          justifySelf: "center"
+        }
+      },
+      `+${data.length - 40}`
+    ) : undefined
+  )
+}
+
 //@ts-ignore
 window.Alpine = Alpine
+
+Alpine.data("exporter", () => ({
+  username: "",
+  uid: "",
+  profilePic: "",
+  init() {
+    this.username = localStorage.getItem("export-username") ?? ""
+    this.uid = localStorage.getItem("export-uid") ?? ""
+    this.profilePic = localStorage.getItem("export-profilePic") ?? ""
+    Alpine.effect(() => {
+      console.log("Effect run", this.username, this.uid, this.profilePic)
+      localStorage.setItem("export-username", this.username)
+      localStorage.setItem("export-uid", this.uid)
+      localStorage.setItem("export-pic", this.profilePic)
+    })
+  },
+  showExportDialog() {
+    const dialog = document.getElementById("export-dialog") as HTMLDialogElement
+    const dialogForm = dialog.getElementsByTagName("form")[0]
+
+    dialogForm.addEventListener("submit", async e => {
+      await this.exportAsPng(e)
+    }, {once: true})
+    dialog.showModal()
+  },
+  async exportAsPng(e: SubmitEvent & {currentTarget: HTMLFormElement}) {
+    const fData = new FormData(e.currentTarget, e.submitter)
+    const file = fData.get('pic') as File
+
+    this.username = fData.get("name")?.toString() ?? ""
+    this.uid = fData.get("uid")?.toString() ?? ""
+    this.profilePic = await file.text()
+    console.log(file)
+
+    let imgBlobUrl = ""
+    const pulldata = Alpine.$data(document.getElementsByTagName("main")[0]) as {
+      characters: AKEListCount[],
+      weapons: AKEListCount[],
+      pulls: {
+      weapons: Partial<Record<string, AKEWeaponHistory[]>>,
+      chars: Partial<Record<string, AKECharacterHistory[]>>}
+    }
+    
+    console.log(pulldata)
+    try {
+      //@ts-ignore
+      ot.toast("Exporting")
+      // const image = await satori(
+      //   Root(),
+      //   {
+      //     width: 1920,
+      //     height: 1080,
+      //     fonts: [{
+      //       name: "Geist",
+      //       data: await fetch("https://cdn.jsdelivr.net/fontsource/fonts/geist@5.3.0/latin-400-normal.woff").then(x=>x.arrayBuffer()),
+      //       weight: 400,
+      //       style: "normal"
+      //     }]
+      //   }
+      // )
+      const image = await satori(
+        createElement(
+          "div", 
+          {
+            style: {
+              fontFamily: "Geist", 
+              color: "white",
+              background: "linear-gradient(160deg, #14161c 0%, #0e0f13 100%)", 
+              display: "flex", 
+              flexDirection: "column", 
+              gap: "15px", 
+              padding: "40px", 
+              width: 1920, 
+              height: 1080
+            }
+          }, 
+          createElement(
+            "div", 
+            {
+              style: {
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between"
+              }
+            },
+            createElement(
+              "div", 
+              {
+                style: {
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: 13
+                }
+              },
+              createElement(
+                "img",
+                {
+                  src: file && file.size !== 0 && file.name !== "" ? await (file as File).arrayBuffer() : icon,
+                  alt: "Image",
+                  width: 120,
+                  height: 120
+                }
+              ),
+              createElement(
+                "div", 
+                {
+                  style: {
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between"
+                  },
+                },
+                createElement("div", { style: { fontSize: "56px" } }, fData.get("name")?.toString() || ""),
+                createElement(
+                  "div",
+                  {
+                    style: {
+                      fontSize: "27px",
+                      padding: "6px 9px",
+                      backgroundColor: "#363636",
+                      borderRadius: 16
+                    }
+                  },
+                  `UID ${fData.get("uid")?.toString() || "Unknown"}`
+                )
+              )
+            ),
+            createElement("div", { style: { fontSize: "38px", textAlign: "right", alignSelf: "flex-start" } }, "Ownership Report")
+          ), 
+          createElement("div", { style: { fontSize: "27px", paddingLeft: "12px" } }, "Owned Characters"),
+          await ownershipList(pulldata.characters),
+          createElement("div", { style: { fontSize: "27px", paddingLeft: "12px" } }, "Owned Weapons"),
+          await ownershipList(pulldata.weapons, false),
+          createElement("div", { style: { display: "flex", flexGrow: 1 } }),
+          createElement(
+            "div", 
+            { style: { display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", fontSize: 19, flex: "1 1 0" } },
+            createElement("p", {}, "AKE Tracker"),
+            createElement("p", {style: {textAlign: "right"}}, "© 2026 AKE Tracker · Fan-made, not affiliated with Gryphline / Hypergryph")
+          )
+
+        ),
+        {
+          width: 1920,
+          height: 1080,
+          fonts: [{
+            name: "Geist",
+            data: await fetch("https://cdn.jsdelivr.net/fontsource/fonts/geist@5.3.0/latin-400-normal.woff").then(x=>x.arrayBuffer()),
+            weight: 400,
+            style: "normal"
+          }],
+          debug: true,
+        }
+      )
+      const imgBlob = new Blob([image], { type: 'image/svg+xml;charset=utf-8' })
+      imgBlobUrl = URL.createObjectURL(imgBlob)
+
+      const img = new Image();
+      img.width = 1920;
+      img.height = 1080;
+
+      img.onload = () => {
+        // 3. Create an offscreen canvas and draw the image
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, img.width, img.height);
+
+        // 4. Export the canvas as a PNG Data URL
+        const pngDataUrl = canvas.toDataURL('image/png');
+
+        // 5. Clean up memory and resolve
+        URL.revokeObjectURL(imgBlobUrl);
+        
+        const downloadLink = document.createElement('a');
+        downloadLink.style.display = "hidden";
+        downloadLink.href = pngDataUrl;
+        downloadLink.download = 'rendered-vector.png';
+        downloadLink.click();
+        downloadLink.remove();
+      };
+
+      img.onerror = (error) => {
+        URL.revokeObjectURL(imgBlobUrl);
+        console.error(error)
+      };
+
+      img.src = imgBlobUrl;
+    } catch (e) {
+      console.error(e)
+      if (imgBlobUrl !== "")
+        URL.revokeObjectURL(imgBlobUrl)
+    }
+  }
+}))
 
 Alpine.data("meta", () => ({
   appVer: import.meta.env.VITE_APP_VERSION,
@@ -249,9 +574,9 @@ Alpine.data("pulldata", () => ({
   async getIcon(char: AKECharacterHistory | AKEWeaponHistory) {
     return (await db.get("assets", char.name.replaceAll(/[^a-z0-9]/gi, "").replaceAll(" ", "").toLowerCase()))?.value
   },
+  // Actual data
   characters: <AKEListCount[]>[],
   weapons: <AKEListCount[]>[],
-  // Actual data
   pulls: {
     weapons: <Partial<Record<string, AKEWeaponHistory[]>>>{},
     chars: <Partial<Record<string, AKECharacterHistory[]>>>{},
@@ -529,6 +854,8 @@ Alpine.data("sync", () => ({
           const peer = this.remotePeers.find(x=>x.id === / (\S*)$/.exec(err.message)?.[1] || "")
           if (peer) peer.conn = undefined
           break;
+        // case "unavailable-id":
+          
       }
     })
   },
@@ -637,8 +964,6 @@ function sortKeys<T extends AKECharacterHistory | AKEWeaponHistory>(obj: Map<str
 
   keys.push(...Array.from(obj.keys()).filter(key => key === "standard" || key === "beginner" || key.includes("constant")))
 
-  console.log(keys)
-
   return keys.reduce((acc, key) => {
       acc[key] = obj.get(key)!;
       return acc;
@@ -713,10 +1038,9 @@ const updateSW = registerSW({
   async onNeedRefresh() {
     const decision = await new Promise<string>(res => {
       const dialog = document.getElementById("refresh-dialog") as HTMLDialogElement
-      dialog.addEventListener("close", function onClose() {
-        dialog.removeEventListener('close', onClose)
+      dialog.addEventListener("close", () => {
         res(dialog.returnValue)
-      })
+      }, {once: true})
       dialog.showModal()
     })
 

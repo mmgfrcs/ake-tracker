@@ -8,6 +8,7 @@ body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hi
 .p-0 { padding: 0;}
 .p-2 { padding: var(--space-2); }
 .p-4 { padding: var(--space-4); }
+.mt-1 { margin-top: var(--space-1); }
 .mt-4 { margin-top: var(--space-4); }
 .card.stat { min-width: 12rem;}
 .icon { width: var(--space-12); border-radius: var(--space-2);}
@@ -31,6 +32,11 @@ body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hi
 .rounded { border-radius: var(--space-4);}
 .bg-banner { background-size: cover; background-position-x: 70%; background-color: light-dark(#444444, #222222); color: white; background-blend-mode: overlay; transition: all 200ms ease-in-out; }
 .bg-banner-selected { background-color: light-dark(#666666, #444444); color: light-dark(var(--primary-foreground), var(--secondary-foreground)); }
+
+label:has(input[required]) span {
+  color: red;
+}
+
 /* Pool Grid */
 .pool-grid {
   display: grid;
