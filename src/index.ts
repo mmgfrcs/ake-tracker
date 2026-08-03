@@ -223,7 +223,6 @@ Alpine.data("exporter", () => ({
     this.uid = localStorage.getItem("export-uid") ?? ""
     this.profilePic = localStorage.getItem("export-profilePic") ?? ""
     Alpine.effect(() => {
-      console.log("Effect run", this.username, this.uid, this.profilePic)
       localStorage.setItem("export-username", this.username)
       localStorage.setItem("export-uid", this.uid)
       localStorage.setItem("export-pic", this.profilePic)
@@ -246,7 +245,6 @@ Alpine.data("exporter", () => ({
     this.username = fData.get("name")?.toString() ?? ""
     this.uid = fData.get("uid")?.toString() ?? ""
     this.profilePic = await file.text()
-    console.log(file)
 
     let imgBlobUrl = ""
     const pulldata = Alpine.$data(document.getElementsByTagName("main")[0]) as {
@@ -257,23 +255,10 @@ Alpine.data("exporter", () => ({
       chars: Partial<Record<string, AKECharacterHistory[]>>}
     }
     
-    console.log(pulldata)
     try {
       //@ts-ignore
       ot.toast("Exporting")
-      // const image = await satori(
-      //   Root(),
-      //   {
-      //     width: 1920,
-      //     height: 1080,
-      //     fonts: [{
-      //       name: "Geist",
-      //       data: await fetch("https://cdn.jsdelivr.net/fontsource/fonts/geist@5.3.0/latin-400-normal.woff").then(x=>x.arrayBuffer()),
-      //       weight: 400,
-      //       style: "normal"
-      //     }]
-      //   }
-      // )
+
       const image = await satori(
         createElement(
           "div", 
@@ -364,8 +349,7 @@ Alpine.data("exporter", () => ({
             data: await fetch("https://cdn.jsdelivr.net/fontsource/fonts/geist@5.3.0/latin-400-normal.woff").then(x=>x.arrayBuffer()),
             weight: 400,
             style: "normal"
-          }],
-          debug: true,
+          }]
         }
       )
       const imgBlob = new Blob([image], { type: 'image/svg+xml;charset=utf-8' })
@@ -424,7 +408,6 @@ Alpine.data("persistence", () => ({
       const dialog = document.getElementById("persistence-dialog") as HTMLDialogElement
       dialog.addEventListener("close", function onClose() {
         dialog.removeEventListener('close', onClose)
-        console.log(dialog.returnValue)
         res(dialog.returnValue)
       })
       dialog.showModal()
@@ -461,7 +444,7 @@ Alpine.data("pulldata", () => ({
         p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity}
         return p
       }, <{[x: string]: AKEListCount}>{}))
-      console.log("Load success", this.pulls.chars)
+      console.log("Load success")
       
       this.$nextTick(() => {
         const tabEl = document.getElementsByTagName('ot-tabs')
@@ -735,7 +718,6 @@ Alpine.data("sync", () => ({
 
           const characters = pData.get("characters") as AKEGachaCharacter[]
           const weapons = pData.get("weapons") as AKEGachaWeapon[]
-          console.log(characters.length, weapons.length)
 
           await db.clear("weapons")
           await db.clear("characters")
@@ -1032,6 +1014,9 @@ console.log("Alpinejs start")
 Alpine.start()
 
 const updateSW = registerSW({
+  onRegisteredSW(_, reg) {
+    setInterval(() => reg?.update(), 30000)
+  },
   onOfflineReady() {
     //@ts-ignore
     ot.toast("App is ready for offline use", "Offline Ready", { variant: 'success' })
