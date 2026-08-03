@@ -217,15 +217,12 @@ window.Alpine = Alpine
 Alpine.data("exporter", () => ({
   username: "",
   uid: "",
-  profilePic: "",
   init() {
     this.username = localStorage.getItem("export-username") ?? ""
     this.uid = localStorage.getItem("export-uid") ?? ""
-    this.profilePic = localStorage.getItem("export-profilePic") ?? ""
     Alpine.effect(() => {
       localStorage.setItem("export-username", this.username)
       localStorage.setItem("export-uid", this.uid)
-      localStorage.setItem("export-pic", this.profilePic)
     })
   },
   showExportDialog() {
@@ -244,7 +241,6 @@ Alpine.data("exporter", () => ({
 
     this.username = fData.get("name")?.toString() ?? ""
     this.uid = fData.get("uid")?.toString() ?? ""
-    this.profilePic = await file.text()
 
     let imgBlobUrl = ""
     const pulldata = Alpine.$data(document.getElementsByTagName("main")[0]) as {
@@ -308,7 +304,8 @@ Alpine.data("exporter", () => ({
                   style: {
                     display: "flex",
                     flexDirection: "column",
-                    justifyContent: "space-between"
+                    justifyContent: "space-between",
+                    alignItems: "flex-start"
                   },
                 },
                 createElement("div", { style: { fontSize: "56px" } }, fData.get("name")?.toString() || ""),
@@ -319,7 +316,8 @@ Alpine.data("exporter", () => ({
                       fontSize: "27px",
                       padding: "6px 9px",
                       backgroundColor: "#363636",
-                      borderRadius: 16
+                      borderRadius: 16,
+                      flex: "1 1 0"
                     }
                   },
                   `UID ${fData.get("uid")?.toString() || "Unknown"}`
@@ -336,8 +334,8 @@ Alpine.data("exporter", () => ({
           createElement(
             "div", 
             { style: { display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", fontSize: 19, flex: "1 1 0" } },
-            createElement("p", {}, "AKE Tracker"),
-            createElement("p", {style: {textAlign: "right"}}, "© 2026 AKE Tracker · Fan-made, not affiliated with Gryphline / Hypergryph")
+            createElement("div", {}, "AKE Tracker"),
+            createElement("div", {}, "© 2026 AKE Tracker · Fan-made, not affiliated with Gryphline / Hypergryph")
           )
 
         ),
