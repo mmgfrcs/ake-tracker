@@ -1013,7 +1013,11 @@ Alpine.start()
 
 const updateSW = registerSW({
   onRegisteredSW(_, reg) {
-    setInterval(() => reg?.update(), 30000)
+    console.log("SW registered")
+    setInterval(() => {
+      reg?.update()
+      console.log("SW update")
+    }, 30000)
   },
   onOfflineReady() {
     //@ts-ignore

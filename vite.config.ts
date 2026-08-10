@@ -9,7 +9,9 @@ export default defineConfig({
     VitePWA({
       registerType: "prompt",
       workbox: {
-        maximumFileSizeToCacheInBytes: 10000000
+        cleanupOutdatedCaches: true,
+        maximumFileSizeToCacheInBytes: 10000000,
+        skipWaiting: true,
       },
       manifest: {
         "name": "Arknights: Endfield Pull Tracker",
@@ -35,7 +37,7 @@ export default defineConfig({
         "screenshots": [
           {
             "src": "example.png",
-            "sizes": "1722x1270",
+            "sizes": "2539x1371",
             "form_factor": "wide",
           },
           {
