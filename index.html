@@ -87,8 +87,8 @@
       <p>An updated version of the app is available. Would you like to update the app now?</p>
     </div>
     <footer>
-      <button value="nok">Update Later</button>
-      <button value="ok">Update Now</button>
+      <button value="nok" commandfor="refresh-dialog" command="close">Update Later</button>
+      <button value="ok" commandfor="refresh-dialog" command="close">Update Now</button>
     </footer>
   </dialog>
   <dialog id="export-dialog" x-on:beforetoggle="username = localStorage.getItem('export-username') ?? ''; uid = localStorage.getItem('export-uid') ?? ''" x-data="{username: localStorage.getItem('export-username') ?? '', uid: localStorage.getItem('export-uid') ?? ''}">
