@@ -1,4 +1,5 @@
-body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; }
+body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; position: relative;}
+details, .card.stat, #bg-image img {transition: opacity 0.5s ease, backdrop-filter 1s ease, background-color 1s ease;}
 
 .inline-flex { display: inline-flex; }
 .flex-1 { flex: 1; }
@@ -25,13 +26,18 @@ body { min-height: 100dvh; display: flex; flex-direction: column; overflow-x: hi
 .items-start { align-items: start; }
 .h-full { height: 100%; }
 .w-full { width: 100%; }
+.h-dvh { height: 100dvh; }
+.w-dvw { width: 100dvw; }
 .h-initial { height: initial; }
 .min-h-0 { min-height: 0; }
 .font-bold { font-weight: bold; }
 .vertical-middle { vertical-align: middle; }
 .rounded { border-radius: var(--space-4);}
+.bg-card { background-color: var(--card);}
 .bg-banner { background-size: cover; background-position-x: 70%; background-color: light-dark(#444444, #222222); color: white; background-blend-mode: overlay; transition: all 200ms ease-in-out; }
 .bg-banner-selected { background-color: light-dark(#666666, #444444); color: light-dark(var(--primary-foreground), var(--secondary-foreground)); }
+.object-cover { object-fit: cover;}
+.opacity-20 {opacity: 20%;}
 
 label:has(input[required]) span {
   color: red;
@@ -101,8 +107,8 @@ label:has(input[required]) span {
   margin-bottom: 0;
 }
 
-.color-limited { background-color: #a5422432; }
-.color-semi-limited { background-color: #88882432; }
+.color-limited { background-color: light-dark(#E6CAC1, #2E130A); }
+.color-semi-limited { background-color: light-dark(#D7D7B5, #2E2E0C) }
 
 [data-tooltip]:before {
   border-top-color: transparent;
@@ -143,3 +149,28 @@ label:has(input[required]) span {
     flex-direction: column-reverse;
   }
 }
+
+.glass {
+  background: color-mix(var(--card), #ffffff66);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+#bg-image {
+  position: sticky;
+  top: 0;
+  pointer-events: none;
+  z-index: -999;
+  opacity: 20%;
+}
+
+#bg-image img {
+  position: absolute;
+  top: 0;
+  height: 100dvh;
+  width: 100dvw;
+  object-fit: cover;
+  z-index: -999;
+}
+
+[x-cloak] { display: none !important; }

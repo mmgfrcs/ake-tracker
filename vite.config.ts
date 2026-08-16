@@ -11,7 +11,6 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         maximumFileSizeToCacheInBytes: 10000000,
-        skipWaiting: true,
       },
       manifest: {
         "name": "Arknights: Endfield Pull Tracker",

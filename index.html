@@ -28,12 +28,17 @@
 
   <title>AKE Tracker</title>
 </head>
-<body>
+<body x-data="{glass: true}" x-init="glass = !localStorage.getItem('pref-glass') || localStorage.getItem('pref-glass') === 'true'" x-effect="localStorage.setItem('pref-glass', glass)">
+  <div id="bg-image" x-cloak>
+    <img x-show="glass" x-transition.duration.500ms.opacity x-transition:enter-end="opacity-20" x-transition:leave-start="opacity-20" alt="" />
+  </div>
   <header class="flex items-center gap-2 p-4">
     <img src="/icon.png" class="icon" />
     <h1 class="m-0 flex-1">Arknights: Endfield Pull Tracker
       <span class="badge vertical-middle" x-data="meta" x-text="'v'+gameVer">-</span></h1>
-
+    <button title="Toggle Glass Effect" class="iconbutton ghost p-0" x-on:click="glass = !glass">
+      <i data-lucide="mirror-rectangular" width="32" height="32"></i>
+    </button>
     <a title="Open Github Repo" href="https://github.com/mmgfrcs/ake-tracker" class="inline-flex">
       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-github-icon lucide-github"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
     </a>
@@ -112,22 +117,37 @@
       </footer>
     </form>
   </dialog>
+  <dialog id="notice-dialog" x-data="{date: '2026-08-16T23:11:00+07:00'}" x-init="if(localStorage.getItem('notice-date') !== date) $el.showModal()">
+    <header>
+      <h3>Notice To Users (NOTUS)</h3>
+      <p x-text="'Released at ' + new Date(date).toString()"></p>
+    </header>
+    <div>
+      <p>Hello and thank you for using this tracker! This is the first notice I've released, so if you are reading this, congrats on being one of the first notice readers! If you want to prove that you've read this (no idea why but hey), when asked for a "proof code", DM me with AKEFTRCKNOTICE</p>
+      <p>Now, I wrote this notice to inform you that the UI colors have changed a bit to be a bit more lively, with a background. If you prefer the old look, you can revert to it by clicking the <i data-lucide="mirror-rectangular" width="24" height="24"></i> button on the top right.</p>
+      <p>I would also like to remind you that you can export your pull data as an image by clicking on the <i data-lucide="image-down" width="24" height="24"></i> button on the top right. Right now it's just your ownership data, but I wanted to expand it later, so stay tuned to that.</p>
+      <p>If you have any questions, suggestions, issues, or just want to tell me that you used it, feel free to contact me on Github, Reddit, or Discord (mmgfrcs)</p>
+      <p>Have a nice day!</p>
+    </div>
+    <footer>
+      <button type="button" commandfor="notice-dialog" command="close" x-on:click="localStorage.setItem('notice-date', date)">OK</button>
+    </footer>
+  </dialog>
   <main class="p-4 flex-1" x-data="pulldata" x-on:data-update.window="await init()">
-    <div role="alert" data-variant="warning" x-data="persistence" x-show="!isPersistent" class="mb-4">
+    <div role="alert" data-variant="warning" x-data="persistence" x-show="!isPersistent" class="mb-4" x-cloak>
       <strong>Data Persistence disabled</strong> 
       <span class="flex-1">Pull Data might be lost when the site is unused or when the browser wants to free up
         storage. Back up your data regularly by clicking on the top right <i data-lucide="download" width="16"
                                                                      height="16"></i> button</span>
       <button class="textbutton ghost p-0"  x-on:click="await showPersistence()">Enable</button>
     </div>
-    <details class="mb-4" x-data="sync">
+    <details class="mb-4" x-bind:class="{glass: glass}" x-data="sync" x-cloak>
       <summary>
         <span class="flex gap-4">
           Data Sync
           <span class="badge" x-show="enableSync" x-text="id">-</span>
 
         </span>
-
       </summary>
       <div x-show="!enableSync">
         <p>Data Sync is currently disabled. Data Sync allows you to sync your pull data from this device to another, allowing you to back up your pull data to another device without needing to download/upload backup files.</p>
@@ -185,7 +205,7 @@
         <button data-variant="danger" class="mt-4">Disable Sync</button>
       </div>
     </details>
-    <details class="mb-4">
+    <details class="mb-4" x-bind:class="{glass: glass}" x-cloak>
       <summary>Submit New Pulls</summary>
       <ul>
         <li>Download the <a href="https://raw.githubusercontent.com/mmgfrcs/ake-tracker/19a21ea3ae83b2bea035ca1111127eda09062eb9/get-record.ps1"><code>get-record.ps1</code></a> PowerShell script in the repo.</li>
@@ -206,7 +226,7 @@
                 x-bind:disabled="!urlForm.enableSubmit" type="submit">Load File</button>
       </form>
     </details>
-    <details class="mb-4">
+    <details class="mb-4" x-bind:class="{glass: glass}" x-cloak>
       <summary>Pull Statistics</summary>
       <article class="card stat flex-1" x-show="Object.keys(pulls.chars).length == 0 && Object.keys(pulls.weapons).length == 0">
         <header>
@@ -252,7 +272,7 @@
       </div>
     </details>
 
-    <ot-tabs>
+    <ot-tabs x-cloak>
       <div role="tablist">
         <button role="tab">Characters</button>
         <button role="tab">Weapons</button>
@@ -260,37 +280,37 @@
       <!-- Characters -->
       <div role="tabpanel">
         <div x-show="Object.keys(pulls.chars).length > 0" class="flex md:flex-row flex-col gap-4 mb-4">
-          <article class="card stat flex-1">
+          <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.charStats.pullNo.toLocaleString('en-GB')">0</h3>
               <p>Pulls</p>
             </header>
           </article>
-          <article class="card stat flex-1">
+          <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.charStats.currencySpent.toLocaleString('en-GB')">0</h3>
               <p>Origometry Spent</p>
             </header>
           </article>
-          <article class="card stat flex-1">
+          <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.charStats.hrObtained.toLocaleString('en-GB')">0</h3>
               <p>6* Obtained</p>
             </header>
           </article>
-          <article class="card stat flex-1">
+          <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.charStats.lrObtained.toLocaleString('en-GB')">0</h3>
               <p>5* Obtained</p>
             </header>
           </article>
-          <article class="card stat flex-1">
+          <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.charStats.avgPity.toFixed(2)">0</h3>
               <p>6* Average Pity</p>
             </header>
           </article>
-          <article class="card stat flex-1">
+          <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.charStats.luckWR.toFixed(1) + '%'">0</h3>
               <p>50:50 Win Rate</p>
@@ -298,7 +318,7 @@
           </article>
         </div>
         <h2 x-show="Object.keys(pulls.chars).length > 0">Banners</h2>
-        <article class="card stat flex-1" x-show="Object.keys(pulls.chars).length == 0">
+        <article class="card stat flex-1" x-bind:class="{glass: glass}" x-show="Object.keys(pulls.chars).length == 0">
           <header>
             <h3>No Pulls Loaded</h3>
             <p>Remember to Import your pulls using the Submit New Pulls above!</p>
@@ -332,19 +352,19 @@
                 <span class="text-lg" x-show="poolData.info" x-text="poolData.info.up_name + ' ' + (poolData.info.type === 'joint' ? 'Joint Banner' : poolData.info.type === 'special' ? 'Limited Banner' : poolData.info.type === 'standard' ? 'Standard Banner' : 'Beginner Banner')"></span>
               </h3>
               <div x-show="Object.keys(pulls.chars).length > 0" class="flex md:flex-row flex-col gap-4 mb-4">
-                <div class="card stat mb-4">
+                <div class="card stat mb-4" x-bind:class="{glass: glass}">
                   <header>
                     <h3 x-text="pulls.chars[pool].length">0</h3>
                     <p>Pulls</p>
                   </header>
                 </div>
-                <div class="card stat mb-4">
+                <div class="card stat mb-4" x-bind:class="{glass: glass}">
                   <header>
                     <h3 x-text="pulls.charPools.find(x=>x.id === pool).pity">0</h3>
                     <p>Current 80-pull Pity</p>
                   </header>
                 </div>
-                <div class="card stat mb-4" x-show="!['standard','beginner'].includes(pool)">
+                <div class="card stat mb-4" x-show="!['standard','beginner'].includes(pool)" x-bind:class="{glass: glass}">
                   <header>
                     <h3 x-text="pulls.charPools.find(x=>x.id === pool).guarantee">0</h3>
                     <p>Current 120-pull Pity</p>
@@ -403,25 +423,25 @@
       <!-- Weapons -->
       <div role="tabpanel">
         <div class="flex sm:flex-row flex-col gap-4 mb-4" x-show="Object.keys(pulls.chars).length > 0">
-          <article class="card stat flex-1">
+          <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.weaponStats.pullNo.toLocaleString('en-GB')">0</h3>
               <p>Pulls</p>
             </header>
           </article>
-          <article class="card stat flex-1">
+          <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.weaponStats.currencySpent.toLocaleString('en-GB')">0</h3>
               <p>Origometry Spent</p>
             </header>
           </article>
-          <article class="card stat flex-1">
+          <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.weaponStats.hrObtained.toLocaleString('en-GB')">0</h3>
               <p>6* Obtained</p>
             </header>
           </article>
-          <article class="card stat flex-1">
+          <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.weaponStats.lrObtained.toLocaleString('en-GB')">0</h3>
               <p>5* Obtained</p>
@@ -517,10 +537,10 @@
     </ot-tabs>
   </main>
   <footer class="flex p-4" x-data="meta">
-    <p class="flex-1">Copyright © 2026 MIT - See <a href="https://github.com/mmgfrcs/ake-tracker/blob/master/LICENSE">
-      LICENSE</a>
-      for details</p>
-    <p x-text="'Version ' + appVer"></p>
+    <p class="flex-1">Copyright © 2026 MIT - See <a href="https://github.com/mmgfrcs/ake-tracker/blob/master/LICENSE">LICENSE</a>
+      for details - <a href="#" x-on:click="document.getElementById('notice-dialog').showModal()">NOTUS</a></p>
+    
+    <p x-text="'Version ' + (appVer || 'dev')"></p>
   </footer>
 </body>
 <script lang="ts" type="module">

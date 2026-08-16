@@ -4,9 +4,10 @@ import '@knadh/oat/oat.min.js'
 import * as idb from 'idb'
 import Alpine from 'alpinejs'
 import icon from './assets/icon.png'
+import bg from './assets/bg.webp'
 import type {AKEGachaCharacter, AKEGachaRecord, AKEGachaWeapon} from './models/record';
 import type {AKECharacterHistory, AKEDBSchema, AKEListCount, AKEWeaponHistory} from "./models/history.ts";
-import {createIcons, Download, ImageDown, Trash2} from 'lucide';
+import {createIcons, Download, ImageDown, Trash2, MirrorRectangular} from 'lucide';
 import {registerSW} from 'virtual:pwa-register'
 import {type DataConnection, Peer} from 'peerjs'
 import {applyUpdate, Doc, encodeStateAsUpdate, encodeStateVector} from 'yjs'
@@ -17,16 +18,18 @@ import satori from 'satori'
 createIcons({icons: {
   Download,
   Trash2,
-  ImageDown
+  ImageDown,
+  MirrorRectangular
 }})
 
 const link = document.querySelector("link[rel~='icon']");
 if (link) (link as HTMLLinkElement).href = icon;
 const applink = document.querySelector("link[rel~='apple-touch-icon']");
 if (applink) (applink as HTMLLinkElement).href = icon;
-
 const iconImg = document.querySelector(".icon");
 if (iconImg) (iconImg as HTMLImageElement).src = icon;
+const bgImg = document.querySelector("#bg-image img") as HTMLImageElement
+if(bgImg) bgImg.src = bg
 
 
 let db: idb.IDBPDatabase<AKEDBSchema> = await idb.openDB("akeTracker", 2, {
@@ -1014,8 +1017,8 @@ Alpine.start()
 const updateSW = registerSW({
   onRegisteredSW(_, reg) {
     console.log("SW registered")
-    setInterval(() => {
-      reg?.update()
+    reg && setInterval(() => {
+      reg.update()
       console.log("SW update")
     }, 30000)
   },
@@ -1032,7 +1035,7 @@ const updateSW = registerSW({
       dialog.showModal()
     })
 
-    if (decision === "ok") await updateSW()
+    if (decision === "ok") await updateSW(true)
   },
 })
 
