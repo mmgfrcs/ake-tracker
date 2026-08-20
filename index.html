@@ -117,16 +117,16 @@
       </footer>
     </form>
   </dialog>
-  <dialog id="notice-dialog" x-data="{date: '2026-08-16T23:11:00+07:00'}" x-init="if(localStorage.getItem('notice-date') !== date) $el.showModal()">
+  <dialog id="notice-dialog" x-data="{date: '2026-08-20T15:36:00+07:00'}" x-init="if(localStorage.getItem('notice-date') !== date) $el.showModal()">
     <header>
       <h3>Notice To Users (NOTUS)</h3>
       <p x-text="'Released at ' + new Date(date).toString()"></p>
     </header>
     <div>
-      <p>Hello and thank you for using this tracker! This is the first notice I've released, so if you are reading this, congrats on being one of the first notice readers! If you want to prove that you've read this (no idea why but hey), when asked for a "proof code", DM me with AKEFTRCKNOTICE</p>
-      <p>Now, I wrote this notice to inform you that the UI colors have changed a bit to be a bit more lively, with a background. If you prefer the old look, you can revert to it by clicking the <i data-lucide="mirror-rectangular" width="24" height="24"></i> button on the top right.</p>
-      <p>I would also like to remind you that you can export your pull data as an image by clicking on the <i data-lucide="image-down" width="24" height="24"></i> button on the top right. Right now it's just your ownership data, but I wanted to expand it later, so stay tuned to that.</p>
-      <p>If you have any questions, suggestions, issues, or just want to tell me that you used it, feel free to contact me on Github, Reddit, or Discord (mmgfrcs)</p>
+      <p>The Offline functionality has been borked for quite some time. Updates are buggy and sometimes not even working. You might still be stuck on an old version and wondering how to update.</p>
+      <p>Well, it should be fixed now. The PWA plugin I'm using is rather weird. I have reset the worker script responsible for the offline functionality, so as long as your app version is new enough, you should be seeing this NOTUS</p>
+      <p>If this is the first time you've seen <i>any</i> NOTUS, well... Hello! Unfortunately you missed the first one. If you have any questions, suggestions, issues, or just want to tell me that you used it, feel free to contact me on Github, Reddit, or Discord (mmgfrcs)</p>
+      <p>I would also like to remind everyone to back up their data regularly by clicking the <i data-lucide="download" width="24" height="24"></i> button on the top right, just in case.</p>
       <p>Have a nice day!</p>
     </div>
     <footer>

@@ -1,17 +1,33 @@
 import { defineConfig } from 'vite'
 import { viteSingleFile } from "vite-plugin-singlefile"
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   // ...
   plugins: [
     viteSingleFile(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: "docs/example*",
+          dest: ".",
+          rename: { stripBase: 1 },
+        }
+      ]
+    }),
     VitePWA({
       registerType: "prompt",
       workbox: {
         cleanupOutdatedCaches: true,
         maximumFileSizeToCacheInBytes: 10000000,
+        clientsClaim: true,
+        globPatterns: ["example*"],
+        additionalManifestEntries: [
+          { url: 'index.html', revision: Date.now().toString() }
+        ],
       },
+      filename: "swv2.js",
       manifest: {
         "name": "Arknights: Endfield Pull Tracker",
         "theme_color": "#574747",

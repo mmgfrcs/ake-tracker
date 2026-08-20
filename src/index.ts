@@ -1085,6 +1085,6 @@ const updateSW = registerSW({
     })
 
     if (decision === "ok") await updateSW(true)
-  },
+  }
 })
 
