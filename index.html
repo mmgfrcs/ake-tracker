@@ -282,6 +282,23 @@
           </div>
         </template>
       </div>
+      <h3 x-show="characters.filter(x=>x.rarity!==6).length > 0">Fun Stats</h3>
+      <article class="card" x-data="{pull: {name: '', icon: '', poolName: '', pulledAt: 0}}" x-effect="pull = getLuckiestPulls()" x-show="pull">
+        <header class="mb-2">
+          <h3>Luckiest Pulls</h3>
+        </header>
+        
+        <div class="flex mb-4 items-center gap-2">
+          <img loading="lazy" class="rounded icon-lg" x-bind:src="await getIcon(pull)" x-bind:alt="pull.name + ' Icon'" />
+          <span class="badge text-lg" x-text="pull.pity">1</span>
+        </div>
+        
+        <p class="flex-1">
+          <span x-text="pull.name">Example Name</span>
+          <span class="text-lighter" x-text="pull.poolName">Example Name</span>
+        </p>
+        <p x-text="new Date(Number(pull.pulledAt)).toLocaleString('en-GB')">Example Name</p>
+      </article>
     </details>
 
     <ot-tabs x-cloak>
@@ -307,25 +324,29 @@
           <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.charStats.hrObtained.toLocaleString('en-GB')">0</h3>
-              <p>6* Obtained</p>
+              <span>6* Obtained</span>
+              <progress x-bind:value="pulls.charStats.hrObtained" x-bind:max="pulls.charStats.pullNo*0.0371"></progress>
             </header>
           </article>
           <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.charStats.lrObtained.toLocaleString('en-GB')">0</h3>
-              <p>5* Obtained</p>
+              <span>5* Obtained</span>
+              <progress x-bind:value="pulls.charStats.lrObtained" x-bind:max="pulls.charStats.pullNo*0.26"></progress>
             </header>
           </article>
           <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.charStats.avgPity.toFixed(2)">0</h3>
-              <p>6* Average Pity</p>
+              <span>6* Average Pity</span>
+              <progress x-bind:value="80-pulls.charStats.avgPity" max="80"></progress>
             </header>
           </article>
           <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.charStats.luckWR.toFixed(1) + '%'">0</h3>
-              <p>50:50 Win Rate</p>
+              <span>50:50 Win Rate</span>
+              <progress x-bind:value="pulls.charStats.luckWR" max="100"></progress>
             </header>
           </article>
         </div>
@@ -421,7 +442,7 @@
                     <img loading="lazy" class="icon" x-bind:src="await getIcon(char)" x-bind:alt="char.name + ' Icon'" />
                     <span class="flex-1">
                     <span x-text="char.name">Example Name</span>
-                    <span class="text-lighter text-sm" x-text="char.poolName + ' ' + char.seqId" x-show="!compact">Example Name</span>
+                    <span class="text-lighter text-sm" x-text="char.poolName" x-show="!compact">Example Name</span>
                     <span class="badge" x-show="char.isFree">FREE</span>
                   </span>
                     <span x-text="new Date(Number(char.pulledAt)).toLocaleString('en-GB')">Example Name</span>
@@ -459,7 +480,7 @@
               <p>5* Obtained</p>
             </header>
           </article>
-          <article class="card stat flex-1">
+          <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.weaponStats.avgPity.toFixed(2)">0</h3>
               <p>6* Average Pity</p>
@@ -501,7 +522,7 @@
               </h3>
               <div class="flex flex-row gap-4 items-center mb-4">
                 <template x-for="(char, idx) in pulls.weapons[pool].filter(x=>x.rarity===6)" x-bind:key="char.seqId">
-                  <div class="flex flex-col gap-1 items-center" x-data="{ seq: getEntryPity(char) }" >
+                  <div class="flex flex-col gap-1 items-center" x-data="{ seq: getEntryPity(char, false) }" >
                     <img loading="lazy" class="icon-lg" x-bind:src="await getIcon(char)" x-bind:alt="char.name + ' Icon'" />
                     <span class="badge" x-bind:class="seq > 30 ? 'danger' : seq < 10 ? 'success' : ''"
                           x-text="seq"></span>

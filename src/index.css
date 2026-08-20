@@ -11,6 +11,7 @@ details, .card.stat, #bg-image img {transition: opacity 0.5s ease, backdrop-filt
 .p-4 { padding: var(--space-4); }
 .mt-1 { margin-top: var(--space-1); }
 .mt-4 { margin-top: var(--space-4); }
+.mb-4 { margin-bottom: var(--space-4);}
 .card.stat { min-width: 12rem;}
 .icon { width: var(--space-12); border-radius: var(--space-2);}
 .icon-lg { width: var(--space-18); border-radius: var(--space-2);}
@@ -24,6 +25,8 @@ details, .card.stat, #bg-image img {transition: opacity 0.5s ease, backdrop-filt
 .text-lg { font-size: 1.1rem;}
 .text-xl { font-size: 1.25rem;}
 .items-start { align-items: start; }
+.items-end { align-items: end; }
+.items-center { align-items: center;}
 .h-full { height: 100%; }
 .w-full { width: 100%; }
 .h-dvh { height: 100dvh; }

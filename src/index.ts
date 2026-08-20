@@ -496,6 +496,14 @@ Alpine.data("pulldata", () => ({
     if (isChar) return is5050Win(this.pulls.chars, charOrWeap)
     else return is5050Win(this.pulls.weapons, charOrWeap)
   },
+  getLuckiestPulls(isChar: boolean = true) {
+    const mPull = this.getAllMergedPulls(isChar).filter(x=>x.rarity === 6).map(x=>({...x, pity: this.getEntryPity(x, isChar)}))
+    if (mPull.length === 0) return {name: '', icon: '', poolName: '', pulledAt: 0}
+    return mPull.reduce((p, n) => {
+      if (p.pity > n.pity) return n
+      else return p
+    })
+  },
   async loadUrl(e: SubmitEvent & {currentTarget: HTMLFormElement}) {
     this.urlForm.enableSubmit = false
 
