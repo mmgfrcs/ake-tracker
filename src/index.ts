@@ -7,7 +7,7 @@ import icon from './assets/icon.png'
 import bg from './assets/bg.webp'
 import type {AKEGachaCharacter, AKEGachaRecord, AKEGachaWeapon} from './models/record';
 import type {AKECharacterHistory, AKEDBSchema, AKEListCount, AKEWeaponHistory} from "./models/history.ts";
-import {createIcons, Download, ImageDown, Trash2, MirrorRectangular} from 'lucide';
+import {createIcons, Download, ImageDown, Trash2, MirrorRectangular, Star} from 'lucide';
 import {registerSW} from 'virtual:pwa-register'
 import {type DataConnection, Peer} from 'peerjs'
 import {applyUpdate, Doc, encodeStateAsUpdate, encodeStateVector} from 'yjs'
@@ -19,8 +19,9 @@ createIcons({icons: {
   Download,
   Trash2,
   ImageDown,
-  MirrorRectangular
-}})
+  MirrorRectangular,
+  Star
+}, inTemplates: true})
 
 const link = document.querySelector("link[rel~='icon']");
 if (link) (link as HTMLLinkElement).href = icon;
@@ -438,11 +439,11 @@ Alpine.data("pulldata", () => ({
       this.pulls.charPools = data.characterPools
       this.calculateStats()
       this.characters = Object.values(Object.values(data.characters).flatMap(x=>x).sort((a, b) => a.rarity > b.rarity ? -1 : 1).reduce((p, n) => {
-        p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity}
+        p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity, pool: n.poolId}
         return p
       }, <{[x: string]: AKEListCount}>{}))
       this.weapons = Object.values(Object.values(data.weapons).flatMap(x=>x).sort((a, b) => a.rarity > b.rarity ? -1 : 1).reduce((p, n) => {
-        p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity}
+        p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity, pool: n.poolId}
         return p
       }, <{[x: string]: AKEListCount}>{}))
       console.log("Load success")
@@ -478,6 +479,25 @@ Alpine.data("pulldata", () => ({
 
     this.pulls.charStats.luckWR = calculate5050WinOdds(this.pulls.chars)
 
+  },
+  getMergedPulls(pool: string, isChar: boolean = true)  {
+    if (isChar) return getFilteredMergedPulls(this.pulls.chars, pool)
+    else return getFilteredMergedPulls(this.pulls.weapons, pool)
+  },
+  getAllMergedPulls(isChar: boolean = true): (AKECharacterHistory | AKEWeaponHistory)[] {
+    if (isChar) return getAllMergedPulls(this.pulls.chars)
+    else return getAllMergedPulls(this.pulls.weapons)
+  },
+  getEntryPity<T extends AKECharacterHistory | AKEWeaponHistory>(charOrWeap: T, isChar: boolean = true) {
+    if (isChar) return getEntryPity(this.pulls.chars, charOrWeap)
+    else return getEntryPity(this.pulls.weapons, charOrWeap)
+  },
+  is5050Win<T extends AKECharacterHistory | AKEWeaponHistory>(charOrWeap: T, isChar: boolean = true) {
+    const lossCharacters = ['chr_0025_ardelia', 'chr_0026_lastrite', 'chr_0029_pograni', 'chr_0009_azrila', 'chr_0015_lifeng']
+    if (lossCharacters.includes(charOrWeap.id)) return false
+    const mergedPulls = this.getMergedPulls(charOrWeap.poolId, isChar)
+    const nextChar = mergedPulls.find((x, i)=>x.rarity === charOrWeap.rarity && i > mergedPulls.indexOf(charOrWeap))
+    return !lossCharacters.includes(nextChar?.id ?? "")
   },
   async loadUrl(e: SubmitEvent & {currentTarget: HTMLFormElement}) {
     this.urlForm.enableSubmit = false
@@ -528,12 +548,12 @@ Alpine.data("pulldata", () => ({
       this.pulls.chars = Object.groupBy(charArr, x=>x.poolId)
 
       this.characters = Object.values(charArr.toSorted((a, b) => a.rarity > b.rarity ? -1 : 1).reduce((p, n) => {
-        p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity}
+        p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity, pool: n.poolId}
         return p
       }, <{[x: string]: AKEListCount}>{}))
 
       this.weapons = Object.values(weapArr.toSorted((a, b) => a.rarity > b.rarity ? -1 : 1).reduce((p, n) => {
-        p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity}
+        p[n.name] = {name: n.name, count: (p[n.name]?.count || 0) + 1, rarity: n.rarity, pool: n.poolId}
         return p
       }, <{[x: string]: AKEListCount}>{}))
 
@@ -936,6 +956,41 @@ function removeDupes(arr: any[]) {
   });
 }
 
+function getEntryPity<T extends AKECharacterHistory|AKEWeaponHistory>(pool: Partial<Record<string, AKECharacterHistory[]>>, charOrWeap: T): number;
+function getEntryPity<T extends AKECharacterHistory|AKEWeaponHistory>(pool: Partial<Record<string, AKEWeaponHistory[]>>, charOrWeap: T): number;
+function getEntryPity<T extends AKECharacterHistory|AKEWeaponHistory>(pool: Partial<Record<string, T[]>>, charOrWeap: T) {
+  const mergedPulls = getFilteredMergedPulls(pool, charOrWeap.poolId)
+  const currentIndex = mergedPulls.length - mergedPulls.indexOf(charOrWeap)
+  const nextChar = mergedPulls.find((x, i)=>x.rarity === charOrWeap.rarity && i > mergedPulls.indexOf(charOrWeap))
+  const nextIndex = nextChar ? mergedPulls.length - mergedPulls.indexOf(nextChar) : 0 
+  const freeCount = mergedPulls.slice(mergedPulls.length - currentIndex, mergedPulls.length - nextIndex).filter(x=>'isFree' in x && x.isFree).length
+  return currentIndex - nextIndex - freeCount
+}
+
+type DeepFlatten<T> = T extends any[]
+  ? { [K in keyof T]: DeepFlatten<T[K]> }[number]
+  : T;
+
+// function getAllMergedPulls(pool: Partial<Record<string, AKECharacterHistory[]>>, isChar: true): AKECharacterHistory[]
+// function getAllMergedPulls(pool: Partial<Record<string, AKEWeaponHistory[]>>, isChar: false): AKEWeaponHistory[]
+function getAllMergedPulls<T extends AKECharacterHistory|AKEWeaponHistory>(pool: Partial<Record<string, T[]>>): T[] {
+  const map = Object.entries(pool)
+    .map(x=>x[1] as T[])
+
+  return (map
+    .flat(20) as DeepFlatten<typeof map>[])
+    .sort((a, b) => b.pulledAt - a.pulledAt || b.seqId - a.seqId)
+}
+
+function getFilteredMergedPulls<T extends AKECharacterHistory|AKEWeaponHistory>(pool: Partial<Record<string, T[]>>, poolId: string)  {
+  return (getAllMergedPulls(pool))
+    .filter(x => {
+      return (x.poolId.includes('special') || x.poolId.includes('joint'))
+        ? (x.poolId.includes('special') || x.poolId.includes('joint'))
+        : x.poolId === poolId // standard/beginner pools stay isolated, as they don't rerun
+    })
+}
+
 function sortKeys<T extends AKECharacterHistory | AKEWeaponHistory>(obj: Map<string, T[]>) {
   let keys = Array.from(obj.keys())
     .filter(key => key != "standard" && key != "beginner" && !key.includes("weaponbox_constant"))
@@ -955,26 +1010,9 @@ function sortKeys<T extends AKECharacterHistory | AKEWeaponHistory>(obj: Map<str
 }
 
 function calculateAvgPity(data: Partial<Record<any, any[]>>) {
-  const poolAverages = Object.values(data)
-      .map(poolChars => {
-        if (!poolChars) return 0;
-        const rarity6Positions = poolChars
-            .toReversed()
-            .map((char, index) => char.rarity === 6 ? index+1 : -1)
-            .filter(pos => pos !== -1);
-
-        if (rarity6Positions.length === 0) return 0;
-        if (rarity6Positions.length === 1) return rarity6Positions[0];
-
-        const pullsBetween = rarity6Positions
-            .map((pos, i) => i === 0 ? pos : pos - rarity6Positions[i - 1]);
-
-        return pullsBetween.reduce((sum, pulls) => sum + pulls, 0) / pullsBetween.length;
-      })
-      .filter(avg => avg > 0);
-
-  return poolAverages.length === 0 ? 0 :
-      poolAverages.reduce((sum, avg) => sum + avg, 0) / poolAverages.length;
+  const mergedPool = getAllMergedPulls(data)
+  const merged6StarPool = mergedPool.filter(x=>x.rarity === 6)
+  return merged6StarPool.map(x=> getEntryPity(data, x)).reduce((p, n) => p+n, 0) / merged6StarPool.length  
 }
 
 function calculateCurrentPity(data: (AKECharacterHistory|AKEWeaponHistory)[], banner: string) {
@@ -1007,8 +1045,12 @@ function calculate5050WinOdds(data: Partial<Record<string, AKECharacterHistory[]
       .filter(([poolId]) => !excludedPools.has(poolId.toLowerCase()))
       .flatMap(([, characters]) => characters?.filter(char => char.rarity === 6) ?? []);
 
-  return sixStarChars.length === 0 ? 0 :
-      (sixStarChars.filter(char => !excludedCharacters.has(char.id)).length / sixStarChars.length) * 100;
+  return sixStarChars.reduce((p, n) => {
+    if (excludedCharacters.has(n.id)) return p
+    const nextChar = sixStarChars.find((_, i)=>i > sixStarChars.indexOf(n))
+    if(!nextChar) return p
+    return !excludedCharacters.has(nextChar.id) ? ++p : p
+  }, 0) / sixStarChars.length * 100
 }
 
 console.log("Alpinejs start")

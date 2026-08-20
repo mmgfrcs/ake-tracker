@@ -20,10 +20,19 @@ export interface AKECharacterHistory {
  */
 export type AKEWeaponHistory = Omit<AKECharacterHistory, "isFree"> & {type: string}
 
+export function isCharacter(value: AKECharacterHistory | AKEWeaponHistory): value is AKECharacterHistory {
+    return 'isFree' in value
+}
+
+export function isWeapon(value: AKECharacterHistory | AKEWeaponHistory): value is AKEWeaponHistory {
+    return !isCharacter(value)
+}
+
 export interface AKEListCount {
     name: string
     count: number
     rarity: number
+    pool: string
 }
 
 export interface AKEDBSchema extends DBSchema {
