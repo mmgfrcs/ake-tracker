@@ -493,11 +493,8 @@ Alpine.data("pulldata", () => ({
     else return getEntryPity(this.pulls.weapons, charOrWeap)
   },
   is5050Win<T extends AKECharacterHistory | AKEWeaponHistory>(charOrWeap: T, isChar: boolean = true) {
-    const lossCharacters = ['chr_0025_ardelia', 'chr_0026_lastrite', 'chr_0029_pograni', 'chr_0009_azrila', 'chr_0015_lifeng']
-    if (lossCharacters.includes(charOrWeap.id)) return false
-    const mergedPulls = this.getMergedPulls(charOrWeap.poolId, isChar)
-    const nextChar = mergedPulls.find((x, i)=>x.rarity === charOrWeap.rarity && i > mergedPulls.indexOf(charOrWeap))
-    return !lossCharacters.includes(nextChar?.id ?? "")
+    if (isChar) return is5050Win(this.pulls.chars, charOrWeap)
+    else return is5050Win(this.pulls.weapons, charOrWeap)
   },
   async loadUrl(e: SubmitEvent & {currentTarget: HTMLFormElement}) {
     this.urlForm.enableSubmit = false
@@ -989,6 +986,16 @@ function getFilteredMergedPulls<T extends AKECharacterHistory|AKEWeaponHistory>(
         ? (x.poolId.includes('special') || x.poolId.includes('joint'))
         : x.poolId === poolId // standard/beginner pools stay isolated, as they don't rerun
     })
+}
+
+function is5050Win<T extends AKECharacterHistory|AKEWeaponHistory>(pool: Partial<Record<string, AKECharacterHistory[]>>, charOrWeap: T): boolean;
+function is5050Win<T extends AKECharacterHistory|AKEWeaponHistory>(pool: Partial<Record<string, AKEWeaponHistory[]>>, charOrWeap: T): boolean;
+function is5050Win<T extends AKECharacterHistory|AKEWeaponHistory>(pool: Partial<Record<string, T[]>>, charOrWeap: T) {
+  const lossCharacters = ['chr_0025_ardelia', 'chr_0026_lastrite', 'chr_0029_pograni', 'chr_0009_azrila', 'chr_0015_lifeng']
+  if (lossCharacters.includes(charOrWeap.id)) return false
+  const mergedPulls = getFilteredMergedPulls(pool, charOrWeap.poolId)
+  const nextChar = mergedPulls.find((x, i)=>x.rarity === charOrWeap.rarity && i > mergedPulls.indexOf(charOrWeap))
+  return !lossCharacters.includes(nextChar?.id ?? "")
 }
 
 function sortKeys<T extends AKECharacterHistory | AKEWeaponHistory>(obj: Map<string, T[]>) {
