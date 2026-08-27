@@ -459,7 +459,7 @@
               <p>5* Obtained</p>
             </header>
           </article>
-          <article class="card stat flex-1">
+          <article class="card stat flex-1" x-bind:class="{glass: glass}">
             <header>
               <h3 x-text="pulls.weaponStats.avgPity.toFixed(2)">0</h3>
               <p>6* Average Pity</p>
@@ -501,7 +501,7 @@
               </h3>
               <div class="flex flex-row gap-4 items-center mb-4">
                 <template x-for="(char, idx) in pulls.weapons[pool].filter(x=>x.rarity===6)" x-bind:key="char.seqId">
-                  <div class="flex flex-col gap-1 items-center" x-data="{ seq: getEntryPity(char) }" >
+                  <div class="flex flex-col gap-1 items-center" x-data="{ seq: getEntryPity(char, false) }" >
                     <img loading="lazy" class="icon-lg" x-bind:src="await getIcon(char)" x-bind:alt="char.name + ' Icon'" />
                     <span class="badge" x-bind:class="seq > 30 ? 'danger' : seq < 10 ? 'success' : ''"
                           x-text="seq"></span>
