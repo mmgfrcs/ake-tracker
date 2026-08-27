@@ -465,7 +465,7 @@ Alpine.data("pulldata", () => ({
   },
   calculateStats() {
     this.pulls.weaponStats.pullNo = Object.values(this.pulls.weapons).reduce((p, n) => p + (n?.length ?? 0), 0)
-    this.pulls.weaponStats.currencySpent = this.pulls.weaponStats.pullNo * 500
+    this.pulls.weaponStats.currencySpent = this.pulls.weaponStats.pullNo * 198
     this.pulls.weaponStats.hrObtained = Object.values(this.pulls.weapons).map(x=>x?.filter(x=>x.rarity === 6).length ?? 0).reduce((p, n) => p+n, 0)
     this.pulls.weaponStats.lrObtained = Object.values(this.pulls.weapons).map(x=>x?.filter(x=>x.rarity === 5).length ?? 0).reduce((p, n) => p+n, 0)
     
