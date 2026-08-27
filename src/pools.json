@@ -1,5 +1,45 @@
 [
   {
+    "version": "1.5-1",
+    "pool_gacha_type": "char",
+    "name": "Winter Hunt",
+    "type": "special",
+    "up_name": "Typhoeus",
+    "image": "151.webp",
+    "start_date": 1756836000,
+    "end_date": 1759284000
+  },
+  {
+    "version": "1.5-1",
+    "pool_gacha_type": "weapon",
+    "name": "Deep Cold Issue",
+    "type": "special",
+    "up_name": "Umbra of Frigid Eventide",
+    "image": "151w.webp",
+    "start_date": 1756836000,
+    "end_date": 1759284000
+  },
+  {
+    "version": "1.5-2",
+    "pool_gacha_type": "char",
+    "name": "Resplendent Spectrum",
+    "type": "joint",
+    "up_name": "Yvonne",
+    "image": "152.webp",
+    "start_date": 1758765600,
+    "end_date": 0
+  },
+  {
+    "version": "1.5-2",
+    "pool_gacha_type": "weapon",
+    "name": "Tag Artist Issue RE-Factor Issue #1",
+    "type": "joint",
+    "up_name": "Artzy Tyrannical",
+    "image": "152.webp",
+    "start_date": 1758765600,
+    "end_date": 0
+  },
+  {
     "version": "1.4-2",
     "pool_gacha_type": "char",
     "name": "Good Morning from Your Dawnstar",
