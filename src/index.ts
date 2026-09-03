@@ -400,7 +400,7 @@ Alpine.data("exporter", () => ({
 
 Alpine.data("meta", () => ({
   appVer: import.meta.env.VITE_APP_VERSION,
-  gameVer: "1.4",
+  gameVer: "1.5",
 }))
 
 Alpine.data("persistence", () => ({
