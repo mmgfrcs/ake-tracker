@@ -1,0 +1,30 @@
+<dialog id="persistence-dialog">
+  <form method="dialog">
+    <header>
+      <h3>Data Persistence</h3>
+    </header>
+    <div>
+      <p>Your data is saved in the browser's storage. However, this data is not persisted forever due to browser restrictions unless the site asks for persistent storage.</p>
+      <p>Therefore, the site is about to request permission to your browser to persist its data. Some browsers will give a pop-up asking you to approve this permission.</p>
+      <p>Note that persistence is not required to use the site. Also, If you use the site regularly, data deletion is also unlikely to happen.</p>
+      <p>Would you like for this site to request to persist its data?</p>
+    </div>
+    <footer>
+      <button value="no" class="outline">No</button>
+      <button value="yes">Yes</button>
+    </footer>
+  </form>
+</dialog>
+<dialog id="persistence-denied-dialog">
+  <header>
+    <h3>Data Persistence Denied</h3>
+  </header>
+  <div>
+    <p>Your browser has denied data persistence permission.</p>
+    <p>If this is intentional on your part, please refresh the page and select "No" on the dialog that appears</p>
+    <p>Otherwise, refresh the page to try again.</p>
+  </div>
+  <footer>
+    <button type="button" commandfor="persistence-denied-dialog" command="close" >OK</button>
+  </footer>
+</dialog>

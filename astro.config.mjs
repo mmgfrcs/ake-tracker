@@ -1,0 +1,81 @@
+// @ts-check
+import { defineConfig } from 'astro/config';
+
+import alpinejs from '@astrojs/alpinejs';
+import { viteSingleFile } from "vite-plugin-singlefile"
+import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { VitePWA } from 'vite-plugin-pwa'
+import {satteri} from '@astrojs/markdown-satteri'
+
+import mdx from "@astrojs/mdx";
+
+// https://astro.build/config
+export default defineConfig({
+  markdown: {
+    processor: satteri()
+  },
+  integrations: [alpinejs({
+    entrypoint: "/src/alpine"
+  }), mdx()],
+  vite: {
+    plugins: [
+      viteSingleFile(),
+      viteStaticCopy({
+        targets: [
+          {
+            src: "docs/example*",
+            dest: ".",
+            rename: { stripBase: 1 },
+          }
+        ]
+      }),
+      VitePWA({
+        registerType: "prompt",
+        workbox: {
+          cleanupOutdatedCaches: true,
+          maximumFileSizeToCacheInBytes: 10000000,
+          clientsClaim: true,
+          globPatterns: ["example*"],
+          additionalManifestEntries: [
+            { url: 'index.html', revision: Date.now().toString() }
+          ],
+        },
+        filename: "swv2.js",
+        manifest: {
+          "name": "Arknights: Endfield Pull Tracker",
+          "theme_color": "#574747",
+          "background_color": "#09090b",
+          "short_name": "AKETracker",
+          "display": "standalone",
+          "start_url": "./",
+          "scope": "./",
+          "description": "A local-first pull tracker for Arknights: Endfield",
+          "icons": [
+            {
+              "src": "icon-512.webp",
+              "type": "image/webp",
+              "sizes": "512x512"
+            },
+            {
+              "src": "icon-192.webp",
+              "type": "image/webp",
+              "sizes": "192x192"
+            }
+          ],
+          "screenshots": [
+            {
+              "src": "example.png",
+              "sizes": "2539x1371",
+              "form_factor": "wide",
+            },
+            {
+              "src": "example-mobile.jpg",
+              "sizes": "1076x2164",
+              "form_factor": "narrow",
+            }
+          ]
+        }
+      })
+    ]
+  }
+});

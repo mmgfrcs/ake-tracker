@@ -1,5 +1,7 @@
 import type { DBSchema } from "idb"
 
+type Override<T, O extends { [F in keyof Partial<T>]: unknown }> = Omit<T, keyof O> & O;
+
 /**
  * Arknights Endfield Character History
  */
@@ -15,10 +17,14 @@ export interface AKECharacterHistory {
     isFree: boolean // Was the character obtained for free?
 }
 
+export type AKEDBCharacterHistory = AKECharacterHistory & {collId: string}
+
 /**
  * Arknights Endfield Weapon History. Same as Character history but without isFree and with a type
  */
 export type AKEWeaponHistory = Omit<AKECharacterHistory, "isFree"> & {type: string}
+
+export type AKEDBWeaponHistory = AKEWeaponHistory & {collId: string}
 
 export function isCharacter(value: AKECharacterHistory | AKEWeaponHistory): value is AKECharacterHistory {
     return 'isFree' in value

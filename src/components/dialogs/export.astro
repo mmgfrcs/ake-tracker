@@ -1,0 +1,26 @@
+<dialog id="export-dialog" x-on:beforetoggle="username = localStorage.getItem('export-username') ?? ''; uid = localStorage.getItem('export-uid') ?? ''" x-data="{username: localStorage.getItem('export-username') ?? '', uid: localStorage.getItem('export-uid') ?? ''}">
+  <form method="dialog">
+    <header>
+      <h3>Export as Image</h3>
+      <p>Fill the form below with your account info to include it in the resulting image. All of it is optional, apart from username.</p>
+    </header>
+    <div class="vstack">
+      <label data-field>
+        Username<span>*</span>
+        <input required type="text" name="name" x-model="username" />
+      </label>
+      <label data-field>
+        UID
+        <input type="text" name="uid" x-model="uid" />
+      </label>
+      <label data-field>
+        Profile Picture<br />
+        <input class="mt-1" type="file" name="pic" accept="image/*" />
+      </label>
+    </div>
+    <footer>
+      <button type="button" commandfor="export-dialog" command="close" class="outline">Cancel</button>
+      <button type="submit" value="submit">Submit</button>
+    </footer>
+  </form>
+</dialog>

@@ -1,0 +1,58 @@
+---
+import { Star } from "@lucide/astro";
+import Empty from "../empty.astro";
+---
+
+<details class="mb-4" x-bind:class="{glass: glass}" x-cloak>
+  <summary>Pull Statistics</summary>
+  <Empty showIf="Object.keys(pulls.chars).length == 0 && Object.keys(pulls.weapons).length == 0" />
+
+  <h3 x-show="getAllMergedPulls().filter(x=>x.rarity===6).length > 0">6<Star width="18" height="18" fill="currentColor" /> Character Pity (Combined)</h3>
+  <div x-show="getAllMergedPulls().filter(x=>x.rarity===6).length > 0" class="flex flex-wrap gap-4">
+    <template x-for="(char, idx) in getAllMergedPulls().filter(x=>x.rarity===6)">
+      <div class="relative flex flex-col gap-1 items-center" x-data="{ seq: getEntryPity(char) }">
+        <img class="rounded icon-lg" x-bind:src="await getIcon(char)" x-bind:alt="char.name" />
+        <span class="badge" x-bind:data-variant="seq > 70 ? 'danger' : seq < 20 ? 'success' : undefined">
+          <span x-text="seq"></span>
+          <Star width="12" height="12" fill="currentColor" x-show="is5050Win(char)" />
+        </span>
+      </div>
+    </template>
+  </div>
+  <h3 x-show="characters.filter(x=>x.rarity===6).length > 0">Owned 6<Star width="18" height="18" fill="currentColor" /> Characters</h3>
+  <div x-show="characters.filter(x=>x.rarity===6).length > 0" class="flex flex-wrap gap-4">
+    <template x-for="(chars, idx) in characters.filter(x=>x.rarity===6)">
+      <div class="flex flex-col gap-1 items-center">
+        <img class="rounded icon-lg" x-bind:src="await getIcon(chars)" x-bind:alt="chars.name" />
+        <span class="badge" x-bind:class="chars.count >= 6 ? 'success' : ''" x-text="'x' + chars.count">1</span>
+      </div>
+    </template>
+  </div>
+  <h3 x-show="characters.filter(x=>x.rarity!==6).length > 0">Other Owned Characters</h3>
+  <div x-show="characters.filter(x=>x.rarity!==6).length > 0" class="flex flex-wrap gap-4">
+    <template x-for="(chars, idx) in characters.filter(x=>x.rarity!==6)">
+      <div class="flex flex-col gap-1 items-center">
+        <img class="rounded icon-lg" x-bind:src="await getIcon(chars)" x-bind:alt="chars.name" />
+        <span class="badge" x-bind:class="chars.count >= 6 ? 'success' : ''" x-text="'x' + chars.count">1</span>
+      </div>
+    </template>
+  </div>
+  <h3 x-show="weapons.filter(x=>x.rarity===6).length > 0">Owned 6<Star width="18" height="18" fill="currentColor" /> Weapons</h3>
+  <div x-show="weapons.filter(x=>x.rarity===6).length > 0" class="flex flex-wrap gap-4">
+    <template x-for="(chars, idx) in weapons.filter(x=>x.rarity===6)">
+      <div class="flex flex-col gap-1 items-center">
+        <img class="rounded icon-lg" x-bind:src="await getIcon(chars)" x-bind:alt="chars.name" />
+        <span class="badge" x-bind:class="chars.count >= 6 ? 'success' : ''" x-text="'x' + chars.count">1</span>
+      </div>
+    </template>
+  </div>
+  <h3 x-show="weapons.filter(x=>x.rarity!==6).length > 0">Other Owned Weapons</h3>
+  <div x-show="weapons.filter(x=>x.rarity!==6).length > 0" class="flex flex-wrap gap-4">
+    <template x-for="(chars, idx) in weapons.filter(x=>x.rarity!==6)">
+      <div class="flex flex-col gap-1 items-center">
+        <img class="rounded icon-lg" x-bind:src="await getIcon(chars)" x-bind:alt="chars.name" />
+        <span class="badge" x-bind:class="chars.count >= 6 ? 'success' : ''" x-text="'x' + chars.count">1</span>
+      </div>
+    </template>
+  </div>
+</details>
