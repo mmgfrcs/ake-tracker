@@ -1,7 +1,7 @@
 import type { Alpine } from 'alpinejs'
 import { type AKECharacterHistory, type AKEListCount, type AKEWeaponHistory } from './models/history'
 import db from './lib/db'
-import type { AKEGachaRecord } from './models/record'
+import type { AKEGachaCharacter, AKEGachaRecord, AKEGachaWeapon } from './models/record'
 import poolInfo from './pools.json';
 import satori from 'satori'
 import icon from "./assets/icon.png"
@@ -13,7 +13,7 @@ import {
 } from 'rxdb/plugins/replication-webrtc';
 import '@knadh/oat/oat.min.js'
 import type { SyncRemotePeers } from './models/sync';
-import {BehaviorSubject, combineLatest} from 'rxjs'
+import {combineLatest} from 'rxjs'
 import { map } from 'rxjs/operators';
 
 export default (Alpine: Alpine) => {
@@ -54,7 +54,7 @@ export default (Alpine: Alpine) => {
       this.uid = fData.get("uid")?.toString() ?? ""
 
       let imgBlobUrl = ""
-      const pulldata = Alpine.$data(document.getElementsByTagName("main")[0]) as {
+      const pulldata = Alpine.$data(document.getElementsByTagName("main")[1]) as {
         characters: AKEListCount[],
         weapons: AKEListCount[],
         pulls: {
@@ -410,6 +410,22 @@ export default (Alpine: Alpine) => {
       message: ""
     }
   }))
+
+  Alpine.data("backup", () => ({
+    async backup() {
+      const bck = await getDataForBackup()
+      const blb = new Blob([JSON.stringify(bck)])
+      const url = URL.createObjectURL(blb)
+
+      const link = document.createElement("a")
+      link.download = `akebackup-${new Date().toISOString()}.json`
+      link.href = url
+      link.click()
+      URL.revokeObjectURL(url)
+      link.remove()
+    }
+  }))
+
   Alpine.data("sync", () => ({
     peer: <Awaited<ReturnType<typeof replicateWebRTC<unknown, SimplePeer>>>[]>[],
     enableSync: false,
@@ -578,32 +594,32 @@ async function loadData() {
   }
 }
 
-// async function getDataForBackupAndSync() {
-//   const charArr = (await db.getAll("characters")).map(x=>(<AKEGachaCharacter>{
-//     charId: x.id,
-//     charName: x.name,
-//     gachaTs: x.pulledAt.toString(),
-//     isFree: x.isFree,
-//     isNew: false,
-//     poolId: x.poolId,
-//     poolName: x.poolName,
-//     rarity: x.rarity,
-//     seqId: x.seqId.toString()
-//   }))
-//   const weapArr = (await db.getAll("weapons")).map(x=>(<AKEGachaWeapon>{
-//     weaponId: x.id,
-//     weaponName: x.name,
-//     weaponType: x.type,
-//     gachaTs: x.pulledAt.toString(),
-//     isNew: false,
-//     poolId: x.poolId,
-//     poolName: x.poolName,
-//     rarity: x.rarity,
-//     seqId: x.seqId.toString()
-//   }))
+async function getDataForBackup() {
+  const charArr = (await db.characters.find().exec()).map(x=>(<AKEGachaCharacter>{
+    charId: x.id,
+    charName: x.name,
+    gachaTs: x.pulledAt.toString(),
+    isFree: x.isFree,
+    isNew: false,
+    poolId: x.poolId,
+    poolName: x.poolName,
+    rarity: x.rarity,
+    seqId: x.seqId.toString()
+  }))
+  const weapArr = (await db.weapons.find().exec()).map(x=>(<AKEGachaWeapon>{
+    weaponId: x.id,
+    weaponName: x.name,
+    weaponType: x.type,
+    gachaTs: x.pulledAt.toString(),
+    isNew: false,
+    poolId: x.poolId,
+    poolName: x.poolName,
+    rarity: x.rarity,
+    seqId: x.seqId.toString()
+  }))
 
-//   return {characters: charArr, weapons: weapArr}
-// }
+  return {characters: charArr, weapons: weapArr}
+}
 
 function removeDupes(arr: any[]) {
   const seen = new Set();
