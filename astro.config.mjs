@@ -79,6 +79,7 @@ export default defineConfig({
     inlineStylesheets: "always",
   },
 
+  base: import.meta.env.PROD && !process.env.FLY_APP_NAME ? "/ake-tracker" : "/",
   integrations: [
     alpinejs({entrypoint: "/src/alpine"}), 
     mdx(),
