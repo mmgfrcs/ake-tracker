@@ -42,5 +42,6 @@
     "@vite-pwa/astro": {
       "astro": "^6.0.0"
     }
-  }
+  },
+  "packageManager": "pnpm@11.14.0"
 }
