@@ -24,6 +24,7 @@
     "@knadh/oat": "^0.7.2",
     "@lucide/astro": "^1.34.0",
     "@types/alpinejs": "^3.13.11",
+    "@vite-pwa/astro": "^1.2.0",
     "alpinejs": "^3.16.3",
     "astro": "7.2.8",
     "dexie": "4.4.2",
@@ -34,6 +35,12 @@
     "sharp": "^0.35.4",
     "vite-plugin-pwa": "^1.3.0",
     "vite-plugin-singlefile": "^2.3.3",
-    "vite-plugin-static-copy": "^4.1.1"
+    "vite-plugin-static-copy": "^4.1.1",
+    "workbox-window": "^7.4.1"
+  },
+  "overrides": {
+    "@vite-pwa/astro": {
+      "astro": "^6.0.0"
+    }
   }
 }

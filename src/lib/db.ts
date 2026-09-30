@@ -8,7 +8,7 @@ import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election'
 import {Dexie} from "dexie"
 
 let storage = wrappedValidateAjvStorage({ storage: getRxStorageDexie() });
-addRxPlugin(RxDBDevModePlugin);
+if (import.meta.env.DEV) addRxPlugin(RxDBDevModePlugin);
 addRxPlugin(RxDBCleanupPlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
 

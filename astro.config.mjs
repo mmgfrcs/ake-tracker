@@ -4,7 +4,7 @@ import { defineConfig } from 'astro/config';
 import alpinejs from '@astrojs/alpinejs';
 import { viteSingleFile } from "vite-plugin-singlefile"
 import { viteStaticCopy } from 'vite-plugin-static-copy'
-import { VitePWA } from 'vite-plugin-pwa'
+import AstroPWA from '@vite-pwa/astro'
 import {satteri} from '@astrojs/markdown-satteri'
 
 import mdx from "@astrojs/mdx";
@@ -85,7 +85,7 @@ export default defineConfig({
     (() => ({
       "name": "inline-assets",
       "hooks": {
-        "astro:build:done": async ({ dir, logger, pages }) => {
+        "astro:build:done": async ({ dir, logger }) => {
         const outDir = process.platform == "win32" ? dir.pathname.slice(1).replaceAll("%20", " ") : dir.pathname.replaceAll("%20", " ");
 
         // Find all HTML files in the output directory
@@ -122,7 +122,7 @@ export default defineConfig({
               const mime = mimeType(ext);
               if (!mime) return match;
               const b64 = fs.readFileSync(assetPath).toString("base64");
-              logger.info(`Inlining icon: ${src}`);
+              logger.info(`Inlining link icon: ${src}`);
               assets.add(assetPath);
               return `${prefix}${quote}data:${mime};base64,${b64}${quote}`;
             });
@@ -163,37 +163,6 @@ export default defineConfig({
             return `url(data:${mime};base64,${b64})`;
           });
 
-          //Inline scripts in index.html
-          // html = html.replace(
-          //   /<script([^>]*)\ssrc="([^"]+)"([^>]*)><\/script>/g,
-          //   (match, before, src, after) => {
-          //     if (src.startsWith('http')) return match;
-          //     const scriptPath = path.join(outDir, src.replace(/^\//, ''));
-          //     if (!fs.existsSync(scriptPath)) return match;
-          //     const code = fs.readFileSync(scriptPath, 'utf-8');
-          //     // Keep all other attributes (e.g. type="module"), just drop src
-          //     const attrs = (before + after).trim();
-          //     logger.info(`Inlining script: ${scriptPath}`);
-          //     assets.add(scriptPath)
-          //     return `<script ${attrs}>${code}</script>`;
-              
-          //   }
-          // );
-
-          // // 2. Replace <link rel="modulepreload" href="..."> with inline <script type="module">
-          // html = html.replace(
-          //   /<link[^>]*\shref="([^"]+)"[^>]*\/?>/g,
-          //   (match, href) => {
-          //     if (!href.endsWith(".js") || href.startsWith('http')) return match;
-          //     const scriptPath = path.join(outDir, href.replace(/^\//, ''));
-          //     if (!fs.existsSync(scriptPath)) return match;
-          //     const code = fs.readFileSync(scriptPath, 'utf-8');
-          //     assets.add(scriptPath)
-          //     logger.info(`Inlining script: ${scriptPath}`);
-          //     return `<script type="module">${code}</script>`;
-          //   }
-          // );
-
           logger.info(`Total Assets: ${assets.size}`)
 
           assets.forEach(x=> {
@@ -224,6 +193,51 @@ export default defineConfig({
         logger.info(`Removed ${removedCount} unoptimized assets`);
       }
     }}))(),
+    AstroPWA({
+      registerType: "prompt",
+      workbox: {
+        cleanupOutdatedCaches: true,
+        maximumFileSizeToCacheInBytes: 10000000,
+        clientsClaim: true,
+        globPatterns: ["*.{html,jpg,png,webp,js,css}", "**/*.js"],
+        navigateFallback: '/'
+      },
+      filename: "swv2.js",
+      manifest: {
+        "name": "Arknights: Endfield Pull Tracker",
+        "theme_color": "#574747",
+        "background_color": "#09090b",
+        "short_name": "AKETracker",
+        "display": "standalone",
+        "start_url": "./",
+        "scope": "./",
+        "description": "A local-first pull tracker for Arknights: Endfield",
+        "icons": [
+          {
+            "src": "icon-512.webp",
+            "type": "image/webp",
+            "sizes": "512x512"
+          },
+          {
+            "src": "icon-192.webp",
+            "type": "image/webp",
+            "sizes": "192x192"
+          }
+        ],
+        "screenshots": [
+          {
+            "src": "example.png",
+            "sizes": "2539x1371",
+            "form_factor": "wide",
+          },
+          {
+            "src": "example-mobile.jpg",
+            "sizes": "1076x2164",
+            "form_factor": "narrow",
+          }
+        ]
+      }
+    })
   ],
   vite: {
     build: {
@@ -241,53 +255,6 @@ export default defineConfig({
             rename: { stripBase: 1 },
           }
         ]
-      }),
-      VitePWA({
-        registerType: "prompt",
-        workbox: {
-          cleanupOutdatedCaches: true,
-          maximumFileSizeToCacheInBytes: 10000000,
-          clientsClaim: true,
-          globPatterns: ["example*"],
-          additionalManifestEntries: [
-            { url: 'index.html', revision: Date.now().toString() }
-          ],
-        },
-        filename: "swv2.js",
-        manifest: {
-          "name": "Arknights: Endfield Pull Tracker",
-          "theme_color": "#574747",
-          "background_color": "#09090b",
-          "short_name": "AKETracker",
-          "display": "standalone",
-          "start_url": "./",
-          "scope": "./",
-          "description": "A local-first pull tracker for Arknights: Endfield",
-          "icons": [
-            {
-              "src": "icon-512.webp",
-              "type": "image/webp",
-              "sizes": "512x512"
-            },
-            {
-              "src": "icon-192.webp",
-              "type": "image/webp",
-              "sizes": "192x192"
-            }
-          ],
-          "screenshots": [
-            {
-              "src": "example.png",
-              "sizes": "2539x1371",
-              "form_factor": "wide",
-            },
-            {
-              "src": "example-mobile.jpg",
-              "sizes": "1076x2164",
-              "form_factor": "narrow",
-            }
-          ]
-        }
       })
     ]
   }

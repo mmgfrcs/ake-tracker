@@ -25,8 +25,9 @@ for(let assetPth in assetMod) {
   if (!name) continue;
 
   optimizedAssetMod[assetPth.includes("banners/") ? name[0] + ".webp" : name[0]] = (await getImage({src: assetMod[assetPth], width: assetMod[assetPth].width, format: "webp"})).src
-
 }
+
+const appleIcon = await getImage({src: icon, width: 180, format: "png"})
 ---
 
 <html lang="en">
@@ -36,7 +37,7 @@ for(let assetPth in assetMod) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#574747">
     <link rel="icon" type="image/png" href={icon.src}>
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+    <link rel="apple-touch-icon" href={appleIcon.src} sizes="180x180">
     <link rel="manifest" href="manifest.webmanifest">
 
     <meta name="mobile-web-app-capable" content="yes">
@@ -112,6 +113,32 @@ for(let assetPth in assetMod) {
       import '@knadh/oat/oat.min.js'
       import db from '../lib/db'
       import Alpine from 'alpinejs';
+      import { registerSW } from "virtual:pwa-register";
+
+      const updateSW = registerSW({
+        onRegisteredSW(_, reg) {
+          console.log("SW registered")
+          reg && setInterval(() => {
+            reg.update()
+            console.log("SW update")
+          }, 30000)
+        },
+        onOfflineReady() {
+          //@ts-ignore
+          ot.toast("App is ready for offline use", "Offline Ready", { variant: 'success' })
+        },
+        async onNeedRefresh() {
+          const decision = await new Promise<string>(res => {
+            const dialog = document.getElementById("refresh-dialog") as HTMLDialogElement
+            dialog.addEventListener("close", () => {
+              res(dialog.returnValue)
+            }, {once: true})
+            dialog.showModal()
+          })
+
+          if (decision === "ok") await updateSW(true)
+        }
+      })
 
       // @ts-ignore
       window.process = {
