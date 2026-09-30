@@ -1,0 +1,156 @@
+---
+interface Props {
+  type: "char"|"weapon";
+}
+
+import { Star } from '@lucide/astro'
+import Empty from './empty.astro';
+const { type } = Astro.props
+---
+
+<div role="tabpanel">
+  <div x-show={`Object.keys(pulls.${type}s).length > 0`} class="flex md:flex-row flex-col gap-4 mb-4">
+    <article class="card stat flex-1" x-bind:class="{glass: glass}">
+      <header>
+        <h3 x-text={`pulls.${type}Stats.pullNo.toLocaleString('en-GB')`}>0</h3>
+        <p>Pulls</p>
+      </header>
+    </article>
+    <article class="card stat flex-1" x-bind:class="{glass: glass}">
+      <header>
+        <h3 x-text={`pulls.${type}Stats.currencySpent.toLocaleString('en-GB')`}>0</h3>
+        <p>{type === "char" ? "Origometry" : "Arsenal Tickets"} Spent</p>
+      </header>
+    </article>
+    <article class="card stat flex-1" x-bind:class="{glass: glass}">
+      <header>
+        <h3 x-text={`pulls.${type}Stats.hrObtained.toLocaleString('en-GB')`}>0</h3>
+        <p>6* Obtained</p>
+      </header>
+    </article>
+    <article class="card stat flex-1" x-bind:class="{glass: glass}">
+      <header>
+        <h3 x-text={`pulls.${type}Stats.lrObtained.toLocaleString('en-GB')`}>0</h3>
+        <p>5* Obtained</p>
+      </header>
+    </article>
+    <article class="card stat flex-1" x-bind:class="{glass: glass}">
+      <header>
+        <h3 x-text={`pulls.${type}Stats.avgPity.toFixed(2)`}>0</h3>
+        <p>6* Average Pity</p>
+      </header>
+    </article>
+    {
+      type === "char" && (
+        <article class="card stat flex-1" x-bind:class="{glass: glass}">
+          <header>
+            <h3 x-text={`pulls.${type}Stats.luckWR.toFixed(1) + '%'`}>0</h3>
+            <p>50:50 Win Rate</p>
+          </header>
+        </article>
+      )
+    }
+  </div>
+  <h2 x-show={`Object.keys(pulls.${type}s).length > 0`}>Banners</h2>
+  <Empty showIf={`Object.keys(pulls.${type}s).length == 0`} />
+
+  <div class="min-h-0 pool-grid" x-show={`Object.keys(pulls.${type}s).length > 0`} x-data="{selected: 0, rarity: [6]}">
+    <aside class="h-initial">
+      <ul>
+        <template x-for={`(pool, idx) in Object.keys(pulls.${type}s)`}>
+          <li>
+            <button x-on:click="selected = idx" x-data={`{poolData: pulls.${type}Pools.find(x=>x.id === pool)}`} x-bind:style="{'background-image': `url('${poolData.info.image}')`}" x-bind:class="selected === idx ? 'bg-banner-selected' : ''" class="card bg-banner w-full flex flex-col items-start p-4">
+              <span class="text-xl font-bold overflow-ellipsis" x-text="poolData.name + (poolData.info.up_name ? ` (${poolData.info.up_name})` : '')"></span>
+              <span x-show="poolData.info">
+                <span x-text="poolData.info?.type === 'joint' ? 'Joint' : poolData.info?.type === 'special' ? 'Limited' : poolData.info?.type === 'standard' ? 'Standard' : 'Beginner'"></span>
+                <span> • </span>
+                <span x-show="['special', 'joint'].includes(poolData.info.type)" x-text="new Date(poolData.info.start_date*1000).toDateString() + ' - ' + new Date(poolData.info.end_date*1000).toDateString()"></span>
+                <span x-show="!['special', 'joint'].includes(poolData.info.type)">Indefinite</span>
+              </span>
+              <span x-show="!poolData.info">Unknown</span>
+            </button>
+          </li>
+        </template>
+      </ul>
+    </aside>
+    <template x-for={`(pool, idx) in Object.keys(pulls.${type}s)`}>
+      <div x-show="selected === idx" x-data={`{ poolData: pulls.${type}Pools.find(x=>x.id === pool), getRecord() { return pulls.${type}s[pool].filter(x=>this.rarity.includes(x.rarity)) } }`}>
+        <h3>
+          <!-- Banner name and data -->
+          <span x-text="poolData.name + ' '"></span>
+          <span class="text-lg" x-show="poolData.info" x-text="poolData.info.up_name + ' ' + (poolData.info.type === 'joint' ? 'Joint Banner' : poolData.info.type === 'special' ? 'Limited Banner' : poolData.info.type === 'standard' ? 'Standard Banner' : 'Beginner Banner')"></span>
+        </h3>
+        <div x-show={`Object.keys(pulls.${type}s).length > 0`} class="flex md:flex-row flex-col gap-4 mb-4">
+          <div class="card stat mb-4" x-bind:class="{glass: glass}">
+            <header>
+              <h3 x-text={`pulls.${type}s[pool].length`}>0</h3>
+              <p>Pulls</p>
+            </header>
+          </div>
+          <div class="card stat mb-4" x-bind:class="{glass: glass}">
+            <header>
+              <h3 x-text={`pulls.${type}Pools.find(x=>x.id === pool).pity`}>0</h3>
+              <p>Current {type === "char" ? "80": "40"}-pull Pity</p>
+            </header>
+          </div>
+          {
+            type === "char" && (
+              <div class="card stat mb-4" x-show="!['standard','beginner'].includes(pool)" x-bind:class="{glass: glass}">
+                <header>
+                  <h3 x-text={`pulls.${type}Pools.find(x=>x.id === pool).guarantee`}>0</h3>
+                  <p>Current 120-pull Pity</p>
+                </header>
+              </div>
+            )
+          }
+
+        </div>
+        <div class="flex flex-row gap-4 items-center mb-4">
+          <template x-for={`(char, idx) in pulls.${type}s[pool].filter(x=>x.rarity===6)`} x-bind:key="char.seqId">
+            <div class="flex flex-col gap-1 items-center" x-data={`{ seq: getEntryPity(char${type === "weapon" ? ", false" : ""}) }`}>
+              <img loading="lazy" class="icon-lg" x-bind:src="await getIcon(char)" x-bind:alt="char.name + ' Icon'" />
+              <span class="badge" x-bind:data-variant={`seq > ${type === "char" ? 70 : 30} ? 'danger' : seq < ${type === "char" ? 20 : 10} ? 'success' : undefined`}  x-text="seq"></span>
+            </div>
+          </template>
+        </div>
+        <menu class="buttons mb-4">
+          <li><button x-bind:class="!rarity.includes(6) ? 'outline' : ''" x-on:click="rarity.includes(6) ? (rarity.length > 1 ? rarity = rarity.filter(x=>x!==6) : '') : rarity.push(6)">
+            6 <Star width="16" height="16" fill="currentColor" />
+          </button></li>
+          <li><button x-bind:class="!rarity.includes(5) ? 'outline' : ''" x-on:click="rarity.includes(5) ? (rarity.length > 1 ? rarity = rarity.filter(x=>x!==5) : '') : rarity.push(5)">
+            5 <Star width="16" height="16" fill="currentColor" />
+          </button></li>
+          <li><button x-bind:class="!rarity.includes(4) ? 'outline' : ''" x-on:click="rarity.includes(4) ? (rarity.length > 1 ? rarity = rarity.filter(x=>x!==4) : '') : rarity.push(4)">
+            4 <Star width="16" height="16" fill="currentColor" />
+          </button></li>
+        </menu>
+        <p x-show="getRecord().length == 0">No Record found for the specified rarity or banner</p>
+        <div x-show="getRecord().length > 0" class="flex flex-col gap-2">
+          <template x-for="(char, idx) in getRecord()" x-bind:key="char.seqId">
+            <article class="card p-4 w-full flex gap-4 items-center"
+                    x-bind:class="char.rarity === 6 ? 'color-limited' : char.rarity === 5 ? 'color-semi-limited' : ''"
+                    x-on:resize.debounce.100.window="compact = window.innerWidth < 720" x-data="{compact: window.innerWidth < 720}">
+              <span class="w-6" x-text={`pulls.${type}s[pool].length - pulls.${type}s[pool].indexOf(char)`}>150</span>
+              <span class="w-30 flex items-center gap-1" x-show="!compact">
+              <template x-for="i in char.rarity">
+                <Star width="16" height="16" fill="currentColor" />
+              </template>
+            </span>
+              <span class="flex items-center gap-1" x-show="compact">
+              <Star width="16" height="16" fill="currentColor" />
+              x<span x-text="char.rarity"></span>
+            </span>
+              <img loading="lazy" class="icon" x-bind:src="await getIcon(char)" x-bind:alt="char.name + ' Icon'" />
+              <span class="flex-1">
+              <span x-text="char.name + ' '">Example Name</span>
+              <span class="text-lighter text-sm" x-text="char.poolName" x-show="!compact">Example Name</span>
+              <span class="badge" x-show="char.isFree">FREE</span>
+            </span>
+              <span x-text="new Date(Number(char.pulledAt)).toLocaleString('en-GB')">Example Name</span>
+            </article>
+          </template>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>

@@ -1,0 +1,10 @@
+---
+let {alpineText = "pulls.charStats.pullNo.toLocaleString('en-GB')", title} = Astro.props;
+---
+
+<article class="card stat flex-1" x-bind:class="{glass: glass}">
+  <header>
+    <h3 x-text={alpineText}>0</h3>
+    <p>{title}</p>
+  </header>
+</article>

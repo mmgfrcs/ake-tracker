@@ -1,0 +1,55 @@
+<details class="mb-4" x-bind:class="{glass: glass}" x-data="sync" x-cloak>
+  <summary>
+    <span class="flex gap-4">
+      Data Sync
+      <span class="badge" x-show="enableSync" x-text="roomId">-</span>
+
+    </span>
+  </summary>
+  <div x-show="!enableSync">
+    <p>Data Sync is currently disabled and cannot be enabled at this time.</p>
+    <p>Data Sync allows you to sync your pull data from this device to another, allowing you to back up your pull data to another device without needing to download/upload backup files.</p>
+    <p>Data Sync uses WebRTC to facilitate direct browser-to-browser data exchange and it is P2P with no intermediary server involved.</p>
+    <!-- <p>Before activating Data Sync, note the following:</p>
+    <ul>
+      <li>In order for devices to find each other, a signalling server is required. The app uses SimplePeer server to act as a signalling server.</li>
+      <li>Due to the above, activating Data Sync will <strong>expose your IP address to the signalling server</strong>, and the server will <a href="https://github.com/peers/peerjs-server/blob/master/PRIVACY.md">retain your IP address for 60 seconds</a> after the last connection attempt.</li>
+      <li>In cases where direct connections are unavailable, Data Sync can fail. <strong>Do not rely on the reliability of the Data Sync service</strong></li>
+      <li>Related to the above, <strong>Data Sync is not a backup</strong> and should not be your only backup source.</li>
+    </ul>
+    <p>Activate Data Sync by clicking on the button below.</p>
+    <button x-on:click="await start()">Activate</button>
+    <p class="mt-2">Or, if you want to join to an existing room, type the room name below</p>
+    <form x-on:submit.prevent="roomId = new FormData($el).get('dname'); await start()"
+          class="flex flex-col gap-4">
+      <input type="text" name="dname" required placeholder="Room Name"/>
+      <button type="submit">Activate</button>
+    </form> -->
+  </div>
+  <div x-show="enableSync">
+    <h3>Current Device</h3>
+    <article class="card flex-1">
+      <header>
+        <h4>Character Sync ID</h4>
+        <p x-text="ids.character"></p>
+        <h4>Weapon Sync ID</h4>
+        <p x-text="ids.weapon"></p>
+      </header>
+    </article>
+    <h3>Peers</h3>
+    <p x-show="remotePeers.length === 0">No peers found</p>
+    <template x-for="pr in remotePeers">
+      <article class="card flex flex-1 flex-col md:flex-row gap-4 items-center">
+        <span x-text="'CID: ' + pr.charSyncId" class="font-bold"></span>
+        <span class="badge" x-text="pr.charSyncState">Default</span>
+        <span x-text="'WID: ' + pr.weaponSyncId" class="font-bold"></span>
+        <span class="badge" x-text="pr.weaponSyncState">Default</span>
+        <span class="flex-1"></span>
+      </article>
+    </template>
+    <div role="alert">
+      To add new peers, join them into the same room. The room ID of this room is: <strong x-text="roomId"></strong>
+    </div>
+    <button data-variant="danger" class="mt-4" x-on:click="disableSync()">Disable Sync</button>
+  </div>
+</details>

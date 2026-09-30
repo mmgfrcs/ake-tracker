@@ -37,12 +37,12 @@ jobs:
       url: ${{ steps.deploy.outputs.url }}
 
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
             lfs: true
       - name: Git Describe
         id: ghd
-        uses: proudust/gh-describe@v2
+        uses: proudust/gh-describe@80412be8ce0e77d8afba6b340e34790bc772aa45 # v2
         with:
           default: '0.0'
       - name: Get App Version from Git Describe
@@ -51,7 +51,7 @@ jobs:
         run: echo $APPVER | sed -E 's/^([0-9]+\.[0-9]+)\.?[0-9]*-([0-9]+)/\1\.\2/; s/\-g[0-9a-f]+//; s/^/VITE_APP_VERSION=/' >> $GITHUB_ENV
       - name: Deploy Preview
         id: deploy
-        uses: superfly/fly-pr-review-apps@1.5.0
+        uses: superfly/fly-pr-review-apps@f5d85309215d5700e7a42faf9aa5e9a718aaef7c # 1.5.0
         with:
           build_args: "APPVER=${{ needs.get-version.outputs.APPVER }}"
   preview-cleanup:
@@ -60,7 +60,7 @@ jobs:
     if: ${{ github.event.action == 'closed' }}
     steps:
       - name: Remove Preview
-        uses: superfly/fly-pr-review-apps@1.5.0
+        uses: superfly/fly-pr-review-apps@f5d85309215d5700e7a42faf9aa5e9a718aaef7c # 1.5.0
       - name: Get GitHub App token
         uses: actions/create-github-app-token@a0de6af83968303c8c955486bf9739a57d23c7f1
         id: get-token
@@ -68,7 +68,7 @@ jobs:
           app-id: ${{ secrets.GH_APP_ID }}
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
       - name: Clean up GitHub environment
-        uses: strumwolf/delete-deployment-environment@v3
+        uses: strumwolf/delete-deployment-environment@608de24d085d9f1f0e45f5df0c3b7c0907d6881a # v3
         with:
           token: ${{ steps.get-token.outputs.token }}
           environment: pr-${{ github.event.number }}

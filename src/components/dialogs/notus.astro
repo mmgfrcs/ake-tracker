@@ -1,0 +1,16 @@
+---
+  import {Content, frontmatter} from "../../assets/notus.mdx"
+---
+
+<dialog id="notice-dialog" x-data={JSON.stringify({date: frontmatter.date})} x-init="if(localStorage.getItem('notice-date') !== date) $el.showModal()">
+  <header>
+    <h3>Notice To Users (NOTUS)</h3>
+    <p x-text="'Released at ' + new Date(date).toString()"></p>
+  </header>
+  <div>
+    <Content />
+  </div>
+  <footer>
+    <button type="button" commandfor="notice-dialog" command="close" x-on:click="localStorage.setItem('notice-date', date)">OK</button>
+  </footer>
+</dialog>

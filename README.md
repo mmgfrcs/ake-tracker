@@ -2,7 +2,7 @@
 
 ![](docs/example.png)
 
-A local-first pull tracker for Arknights: Endfield. The whole site is packed to a single HTML file
+A local-first pull tracker for Arknights: Endfield.
 
 Uses [Alpine.js](https://alpinejs.dev/) and [Oat](https://oat.ink/) and powered by Vite.
 
@@ -11,7 +11,7 @@ Requires pnpm v10 and node v24
 
 - Install dependencies with `pnpm install`
 - Build it with `pnpm build`
-- The site is available at `dist` folder as a single HTML file, ready to open and use
+- The site is available at `dist` folder
 
 ## Features
 
@@ -24,7 +24,7 @@ Requires pnpm v10 and node v24
 
 ## Usage
 
-After building the site, open the resulting `index.html` file on your browser, which should land you on the site homepage. You can ignore all the other files in the folder; those are not required for a functioning site, but you may want them if you are going to deploy it as it is deployed on this repo's Github Pages.
+After building the site, open the resulting `index.html` file on your browser, which should land you on the site homepage. Apart from the `_astro` folder, you can ignore all the other files in the folder; those are not required for a functioning site, but you may want them if you are going to deploy it as it is deployed on this repo's Github Pages.
 
 Alternatively, you can visit the site [here](https://mmgfrcs.github.io/ake-tracker/)
 

@@ -1,0 +1,14 @@
+---
+interface Props {
+  showIf: string
+}
+
+let {showIf} = Astro.props
+---
+
+<article class="card stat flex-1" x-bind:class="{glass: glass}" x-show={showIf}>
+  <header>
+    <h3>No Pulls Loaded</h3>
+    <p>Remember to Import your pulls using the Submit New Pulls above!</p>
+  </header>
+</article>

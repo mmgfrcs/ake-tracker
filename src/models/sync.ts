@@ -1,5 +1,6 @@
-export interface SyncMessage {
-    type: string,
-    origin: string,
-    data?: Uint8Array<ArrayBufferLike>
+export interface SyncRemotePeers {
+    charSyncId: string,
+    weaponSyncId: string,
+    charSyncState: string
+    weaponSyncState: string
 }
