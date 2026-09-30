@@ -226,6 +226,26 @@ export default defineConfig({
 
           fs.writeFileSync(htmlFile, html);
         }
+
+        const assetsDir = path.join(outDir, "_astro");
+        const ORIGINAL_EXTS = /\.(jpg|jpeg|png|gif|webp)$/i;
+        let removedCount = 0;
+
+        if (fs.existsSync(assetsDir)) {
+          const bundledImages = findFiles(assetsDir, ".jpg")
+            .concat(findFiles(assetsDir, ".jpeg"))
+            .concat(findFiles(assetsDir, ".png"))
+            .concat(findFiles(assetsDir, ".gif"))
+            .concat(findFiles(assetsDir, ".webp"));
+
+          for (const imageFile of bundledImages) {
+            if (!ORIGINAL_EXTS.test(imageFile)) continue;
+            if (!fs.existsSync(imageFile)) continue;
+            fs.rmSync(imageFile);
+            removedCount++;
+          }
+        }
+        logger.info(`Removed ${removedCount} unoptimized assets`);
       }
     }}))(),
   ],
@@ -237,22 +257,6 @@ export default defineConfig({
     },
     plugins: [
       viteSingleFile({useRecommendedBuildConfig: false, removeViteModuleLoader: true}),
-      {
-        name: 'remove-unoptimized-originals',
-        enforce: 'post',
-        generateBundle(_, bundle) {
-          let count = 0
-          const ORIGINAL_EXTS = /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/;
-          for (const [key, chunk] of Object.entries(bundle)) {
-            // Only remove asset chunks (not JS), and only original formats
-            if (chunk.type === 'asset' && ORIGINAL_EXTS.test(key)) {
-              delete bundle[key];
-              count++
-            }
-          }
-          this.info(`Removed ${count} unoptimized assets`)
-        },
-      },
       viteStaticCopy({
         targets: [
           {
