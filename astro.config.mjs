@@ -109,6 +109,25 @@ export default defineConfig({
             return `${pre}data:${mime};base64,${b64}${post}`;
           });
 
+          // Inline icon assets referenced by <link> tags
+          html = html.replace(/<link\b[^>]*>/gi, (tag) => {
+            const relMatch = tag.match(/\brel\s*=\s*(["'])(.*?)\1/i);
+            if (!relMatch || !/(?:^|\s)(?:icon|apple-touch-icon|mask-icon)(?:\s|$)/i.test(relMatch[2])) return tag;
+
+            return tag.replace(/(\bhref\s*=\s*)(["'])(.*?)\2/i, (match, prefix, quote, src) => {
+              if (src.startsWith("data:") || src.startsWith("http")) return match;
+              const assetPath = path.join(outDir, src.replace(/^\/+/, ""));
+              if (!fs.existsSync(assetPath)) return match;
+              const ext = path.extname(assetPath).slice(1).toLowerCase();
+              const mime = mimeType(ext);
+              if (!mime) return match;
+              const b64 = fs.readFileSync(assetPath).toString("base64");
+              logger.info(`Inlining icon: ${src}`);
+              assets.add(assetPath);
+              return `${prefix}${quote}data:${mime};base64,${b64}${quote}`;
+            });
+          });
+
           // Inline data-assets
           html = html.replace(/(<div\s[^>]*data-assets=")([^"]+)(")/g, (match, pre, src, post) => {
             const assetJson = JSON.parse(unescapeHTML(src))
