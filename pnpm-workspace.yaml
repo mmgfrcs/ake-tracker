@@ -3,3 +3,6 @@ allowBuilds:
   sharp: true
 minimumReleaseAgeExclude:
   - astro@7.2.8
+
+publicHoistPattern:
+  - astro-single-file

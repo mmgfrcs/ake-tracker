@@ -11,14 +11,22 @@ import NotusDialog from "../components/dialogs/notus.astro"
 import bg from "../assets/bg.webp"
 import NewPullSection from "../components/sections/new-pulls.astro"
 import PullStatSection from "../components/sections/pull-stats.astro"
-import {Image} from "astro:assets"
+import {getImage, Image} from "astro:assets"
 import { Download,
-  Trash2,
   ImageDown,
-  MirrorRectangular,
-  Star, LoaderCircle } from '@lucide/astro';
+  MirrorRectangular, LoaderCircle } from '@lucide/astro';
 import Pullstats from '../components/pullstats.astro';
 import SyncSection from '../components/sections/sync.astro';
+
+const assetMod = import.meta.glob<ImageMetadata>("/src/assets/**/*.{jpg,png,webp}", {import: "default", eager: true})
+const optimizedAssetMod: Record<string, string> = {}
+for(let assetPth in assetMod) {
+  const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
+  if (!name) continue;
+
+  optimizedAssetMod[assetPth.includes("banners/") ? name[0] + ".webp" : name[0]] = (await getImage({src: assetMod[assetPth], width: assetMod[assetPth].width, format: "webp"})).src
+
+}
 ---
 
 <html lang="en">
@@ -47,6 +55,7 @@ import SyncSection from '../components/sections/sync.astro';
     <meta name="twitter:card" content="summary" />
   </head>
   <body x-data="{glass: true}" x-init="glass = !localStorage.getItem('pref-glass') || localStorage.getItem('pref-glass') === 'true'" x-effect="localStorage.setItem('pref-glass', glass)">
+    <div id="assetscoll" data-assets={JSON.stringify(optimizedAssetMod)}></div>
     <div id="bg-image" x-cloak>
       <Image src={bg} x-show="glass" x-transition.duration.500ms.opacity="" x-transition:enter-end="opacity-20" x-transition:leave-start="opacity-20" alt="" />
     </div>
@@ -101,7 +110,6 @@ import SyncSection from '../components/sections/sync.astro';
     </footer>
     <script>
       import '@knadh/oat/oat.min.js'
-      import type { ImageMetadata } from 'astro';
       import db from '../lib/db'
       import Alpine from 'alpinejs';
 
@@ -112,18 +120,22 @@ import SyncSection from '../components/sections/sync.astro';
 
       console.log("Loading assets")
 
-      const assetMod = import.meta.glob<ImageMetadata>("/src/assets/**/*.webp", {import: "default"})
+      const assetElem = document.getElementById("assetscoll")
 
-      for(let assetPth in assetMod) {
-        const name = assetPth.match(/[^/\\]+?(?=\.\w+$)/);
-        if (!name) continue;
+      if(assetElem) {
+        const optimizedAssetMod = JSON.parse(assetElem.dataset["assets"]!)
 
-        await db.assets.upsert({id: assetPth.includes("banners/") ? name[0] + ".webp" : name[0], value: (await assetMod[assetPth]()).src, _deleted: false})
+        for(let assetPth in optimizedAssetMod) {
+          await db.assets.upsert({id: assetPth, value: optimizedAssetMod[assetPth]})
+        }
+
+        console.log("Init done")
+
+        Alpine.start()
+      } else {
+        ot.toast("Cannot load assets", "", {variant: "danger"})
       }
 
-      console.log("Init done")
-
-      Alpine.start()
     </script>
   </body>
 </html>

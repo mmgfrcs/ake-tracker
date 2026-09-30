@@ -23,21 +23,21 @@
     "version": "1.5-2",
     "pool_gacha_type": "char",
     "name": "Resplendent Spectrum",
-    "type": "joint",
+    "type": "rerun",
     "up_name": "Yvonne",
     "image": "152.webp",
-    "start_date": 1758765600,
-    "end_date": 0
+    "start_date": 1758686400,
+    "end_date": 1760443200
   },
   {
     "version": "1.5-2",
     "pool_gacha_type": "weapon",
-    "name": "Tag Artist Issue RE-Factor Issue #1",
-    "type": "joint",
+    "name": "Tag Artist Issue",
+    "type": "rerun",
     "up_name": "Artzy Tyrannical",
-    "image": "152.webp",
-    "start_date": 1758765600,
-    "end_date": 0
+    "image": "152w.webp",
+    "start_date": 1758686400,
+    "end_date": 1760443200
   },
   {
     "version": "1.4-2",
