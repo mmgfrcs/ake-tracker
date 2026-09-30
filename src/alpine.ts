@@ -21,7 +21,7 @@ export default (Alpine: Alpine) => {
   console.log("Alpine load")
 
   Alpine.data("meta", () => ({
-    appVer: import.meta.env.VITE_APP_VERSION,
+    appVer: import.meta.env.PUBLIC_APP_VERSION,
     gameVer: "1.5",
   }))
 
