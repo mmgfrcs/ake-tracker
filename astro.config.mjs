@@ -69,49 +69,6 @@ function escapeHTML(str) {
   return str.replace(/\&|\<|\>|\'|\"/g, (/** @type {string} */ tag) => entities[tag] || tag);
 };
 
-/**
- * @param {string} filePath
- * @returns {string}
- */
-function bundleJS(filePath, seen = new Set()) {
-  const realPath = path.resolve(filePath);
-  if (seen.has(realPath)) return '';
-  seen.add(realPath);
-
-  console.log(realPath)
-
-  if (!fs.existsSync(realPath)) return '';
-
-  let code = fs.readFileSync(realPath, 'utf-8');
-  const fileDir = path.dirname(realPath);
-
-  // Match: import ... from './foo.js'  OR  import './foo.js'
-  const importRe = /\bimport\s*(?:[^'"]*?\s*from\s*)?["'](\.[^"']+)["']\s*;?/g;
-
-  const chunks = [];
-  let lastIndex = 0;
-  let match;
-
-  while ((match = importRe.exec(code)) !== null) {
-    const importPath = match[1];
-    console.log(importPath)
-    const absImportPath = path.resolve(fileDir, importPath);
-
-    // Append code before this import statement
-    chunks.push(code.slice(lastIndex, match.index));
-
-    // Recursively inline the imported file
-    chunks.push(bundleJS(absImportPath, seen));
-
-    lastIndex = match.index + match[0].length;
-  }
-
-  // Append remaining code after last import
-  chunks.push(code.slice(lastIndex));
-
-  return chunks.join('\n');
-}
-
 
 // https://astro.build/config
 export default defineConfig({
@@ -129,7 +86,7 @@ export default defineConfig({
       "name": "inline-assets",
       "hooks": {
         "astro:build:done": async ({ dir, logger, pages }) => {
-        const outDir = dir.pathname.slice(1).replaceAll("%20", " ");
+        const outDir = process.platform == "win32" ? dir.pathname.slice(1).replaceAll("%20", " ") : dir.pathname.replaceAll("%20", " ");
 
         // Find all HTML files in the output directory
         const htmlFiles = findFiles(outDir, ".html");
