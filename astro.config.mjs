@@ -29,6 +29,19 @@ function findFiles(dir, ext) {
   return results;
 }
 
+const base = import.meta.env.PROD && !process.env.FLY_APP_NAME ? "/ake-tracker" : "/";
+
+/**
+ * @param {string} url
+ * @param {string} outDir
+ */
+function resolveOutputAsset(url, outDir) {
+  const pathWithoutBase = base !== "/" && (url === base || url.startsWith(`${base}/`))
+    ? url.slice(base.length)
+    : url;
+  return path.join(outDir, pathWithoutBase.replace(/^\/+/, ""));
+}
+
 /**
  * @param {string} ext
  */
@@ -79,7 +92,7 @@ export default defineConfig({
     inlineStylesheets: "always",
   },
 
-  base: import.meta.env.PROD && !process.env.FLY_APP_NAME ? "/ake-tracker" : "/",
+  base,
   integrations: [
     alpinejs({entrypoint: "/src/alpine"}), 
     mdx(),
@@ -99,7 +112,7 @@ export default defineConfig({
           // Inline <img src="..."> tags
           html = html.replace(/(<img\s[^>]*src=")([^"]+)(")/g, (match, pre, src, post) => {
             if (src.startsWith("data:") || src.startsWith("http")) return match;
-            const assetPath = path.join(outDir, src);
+            const assetPath = resolveOutputAsset(src, outDir);
             if (!fs.existsSync(assetPath)) return match;
             const ext = path.extname(assetPath).slice(1).toLowerCase();
             const mime = mimeType(ext);
@@ -117,7 +130,7 @@ export default defineConfig({
 
             return tag.replace(/(\bhref\s*=\s*)(["'])(.*?)\2/i, (match, prefix, quote, src) => {
               if (src.startsWith("data:") || src.startsWith("http")) return match;
-              const assetPath = path.join(outDir, src.replace(/^\/+/, ""));
+              const assetPath = resolveOutputAsset(src, outDir);
               if (!fs.existsSync(assetPath)) return match;
               const ext = path.extname(assetPath).slice(1).toLowerCase();
               const mime = mimeType(ext);
@@ -135,7 +148,7 @@ export default defineConfig({
 
             for(let asset in assetJson) {
               if (assetJson[asset].startsWith("data:") || assetJson[asset].startsWith("http")) continue
-              const assetPath = path.join(outDir, assetJson[asset]);
+              const assetPath = resolveOutputAsset(assetJson[asset], outDir);
 
               if (!fs.existsSync(assetPath)) continue
               const ext = path.extname(assetPath).slice(1).toLowerCase();
@@ -153,7 +166,7 @@ export default defineConfig({
           // Inline url(...) inside <style> blocks
           html = html.replace(/url\(["']?([^"')]+\.(woff2?|ttf|eot|png|jpg|jpeg|gif|svg|webp))["']?\)/g, (match, src) => {
             if (src.startsWith("data:") || src.startsWith("http")) return match;
-            const assetPath = path.join(outDir, src);
+            const assetPath = resolveOutputAsset(src, outDir);
             if (!fs.existsSync(assetPath)) return match;
             const ext = path.extname(assetPath).slice(1).toLowerCase();
             const mime = mimeType(ext);
