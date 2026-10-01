@@ -705,13 +705,18 @@ function calculateAvgPity(data: Partial<Record<any, any[]>>) {
 function calculateCurrentPity(data: (AKECharacterHistory|AKEWeaponHistory)[], banner: string) {
   if(!data || data.length === 0) return 0;
 
-  let sortedPulls = data.filter(x=>
-    banner.includes("special") ? 
-    x.poolId.includes("special") : 
-    x.poolId.includes("joint")).filter(x=>x.poolId !== "standard" && x.poolId !== "beginner").sort((a, b) => b.pulledAt - a.pulledAt)
+  let sortedPulls = data
+    .filter(x=>!banner.includes("special") || x.poolId.includes("special"))
+    .filter(x=>!banner.includes("rerun") || x.poolId.includes("rerun"))
+    .filter(x=>!banner.includes("joint") || x.poolId.includes("joint"))
+    .filter(x=>!banner.includes("standard") || x.poolId.includes("standard"))
+    .filter(x=>!banner.includes("beginner") || x.poolId.includes("beginner"))
+    .filter(x=>!banner.includes("weapon") || x.poolId === banner)
+    .sort((a, b) => b.pulledAt - a.pulledAt)
+
   let last6StarIdx = sortedPulls.findIndex(x=>x.rarity === 6)
   if(last6StarIdx === -1) last6StarIdx = sortedPulls.length;
-
+  console.log(banner, sortedPulls)
   last6StarIdx -= sortedPulls.slice(0, last6StarIdx).filter(x=>("isFree" in x) && x.isFree).length
   return last6StarIdx
 }
@@ -719,7 +724,10 @@ function calculateCurrentPity(data: (AKECharacterHistory|AKEWeaponHistory)[], ba
 function calculateCurrentPityGuarantee(data: (AKECharacterHistory|AKEWeaponHistory)[], banner: string) {
   if(!data || data.length === 0) return 0;
 
-  const sortedPulls = data.filter(x=>x.poolId === banner).sort((a, b) => b.pulledAt - a.pulledAt)
+  const sortedPulls = data
+    .filter(x=>banner.includes("rerun") ? x.poolId.includes("rerun") : x.poolId === banner)
+    .sort((a, b) => b.pulledAt - a.pulledAt)
+
   let last6StarIdx = sortedPulls.findIndex(x=>x.rarity === 6 && !['chr_0025_ardelia', 'chr_0026_lastrite', 'chr_0029_pograni', 'chr_0009_azrila', 'chr_0015_lifeng'].includes(x.id))
   if(last6StarIdx === -1) last6StarIdx = sortedPulls.length;
 

@@ -40,5 +40,3 @@ await Promise.all(urls.map(async e => {
   else console.error(x.status, await x.json())
   return stream.close()
 }))
-
-//Generate a commit message for the staged changes. Start the message with the main action of the commit (Update, Add, Create, Fix, etc). Add a list of the summary of changes. Do not over-describe - prefer simple explanations

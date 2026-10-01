@@ -55,6 +55,7 @@ const { type } = Astro.props
   <Empty showIf={`Object.keys(pulls.${type}s).length == 0`} />
 
   <div class="min-h-0 pool-grid" x-show={`Object.keys(pulls.${type}s).length > 0`} x-data="{selected: 0, rarity: [6]}">
+    <!-- Banner list (on the left) -->
     <aside class="h-initial">
       <ul>
         <template x-for={`(pool, idx) in Object.keys(pulls.${type}s)`}>
@@ -62,10 +63,10 @@ const { type } = Astro.props
             <button x-on:click="selected = idx" x-data={`{poolData: pulls.${type}Pools.find(x=>x.id === pool)}`} x-bind:style="{'background-image': `url('${poolData.info.image}')`}" x-bind:class="selected === idx ? 'bg-banner-selected' : ''" class="card bg-banner w-full flex flex-col items-start p-4">
               <span class="text-xl font-bold overflow-ellipsis" x-text="poolData.name + (poolData.info.up_name ? ` (${poolData.info.up_name})` : '')"></span>
               <span x-show="poolData.info">
-                <span x-text="poolData.info?.type === 'joint' ? 'Joint' : poolData.info?.type === 'special' ? 'Limited' : poolData.info?.type === 'standard' ? 'Standard' : 'Beginner'"></span>
+                <span x-text="poolData.info?.type === 'joint' ? 'Joint' : poolData.info?.type === 'special' ? 'Limited' : poolData.info?.type === 'rerun'  ? 'RE-Factor' : poolData.info?.type === 'standard' ? 'Standard' : 'Beginner'"></span>
                 <span> • </span>
-                <span x-show="['special', 'joint'].includes(poolData.info.type)" x-text="new Date(poolData.info.start_date*1000).toDateString() + ' - ' + new Date(poolData.info.end_date*1000).toDateString()"></span>
-                <span x-show="!['special', 'joint'].includes(poolData.info.type)">Indefinite</span>
+                <span x-show="['special', 'joint', 'rerun'].includes(poolData.info.type)" x-text="new Date(poolData.info.start_date*1000).toDateString() + ' - ' + new Date(poolData.info.end_date*1000).toDateString()"></span>
+                <span x-show="!['special', 'joint', 'rerun'].includes(poolData.info.type)">Indefinite</span>
               </span>
               <span x-show="!poolData.info">Unknown</span>
             </button>
@@ -78,7 +79,7 @@ const { type } = Astro.props
         <h3>
           <!-- Banner name and data -->
           <span x-text="poolData.name + ' '"></span>
-          <span class="text-lg" x-show="poolData.info" x-text="poolData.info.up_name + ' ' + (poolData.info.type === 'joint' ? 'Joint Banner' : poolData.info.type === 'special' ? 'Limited Banner' : poolData.info.type === 'standard' ? 'Standard Banner' : 'Beginner Banner')"></span>
+          <span class="text-lg" x-show="poolData.info" x-text="poolData.info.up_name + ' ' + (poolData.info.type === 'joint' ? 'Joint Banner' : poolData.info.type === 'special' ? 'Limited Banner' : poolData.info.type === 'rerun' ? 'RE-Factor Banner' : poolData.info.type === 'standard' ? 'Standard Banner' : 'Beginner Banner')"></span>
         </h3>
         <div x-show={`Object.keys(pulls.${type}s).length > 0`} class="flex md:flex-row flex-col gap-4 mb-4">
           <div class="card stat mb-4" x-bind:class="{glass: glass}">

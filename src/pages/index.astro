@@ -3,7 +3,6 @@ import '@knadh/oat/oat.min.css';
 import '../index.css'
 
 import icon from "../assets/icon.png"
-import Card from "../components/card.astro"
 import PersistenceDialog from "../components/dialogs/persistence.astro"
 import RefreshDialog from "../components/dialogs/refresh.astro"
 import ExportDialog from "../components/dialogs/export.astro"
@@ -17,6 +16,12 @@ import { Download,
   MirrorRectangular, LoaderCircle } from '@lucide/astro';
 import Pullstats from '../components/pullstats.astro';
 import SyncSection from '../components/sections/sync.astro';
+import { pwaInfo } from "virtual:pwa-info";
+
+const scriptCommit = {
+  name: "Add Rerun Banner Handling to Script",
+  sha: "8886b657ac569ece1a1806eee0b5730762f3721c"
+}
 
 const assetMod = import.meta.glob<ImageMetadata>("/src/assets/**/*.{jpg,png,webp}", {import: "default", eager: true})
 const optimizedAssetMod: Record<string, string> = {}
@@ -38,7 +43,7 @@ const appleIcon = await getImage({src: icon, width: 180, format: "png"})
     <meta name="theme-color" content="#574747">
     <link rel="icon" type="image/png" href={icon.src}>
     <link rel="apple-touch-icon" href={appleIcon.src} sizes="180x180">
-    <link rel="manifest" href="manifest.webmanifest">
+    {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -90,7 +95,7 @@ const appleIcon = await getImage({src: icon, width: 180, format: "png"})
           storage. Back up your data regularly by clicking on the top right <Download width="16" height="16" /> button</span>
         <button class="textbutton ghost p-0"  x-on:click="await showPersistence()">Enable</button>
       </div>
-      <NewPullSection />
+      <NewPullSection {scriptCommit} />
       <SyncSection />
       <PullStatSection />
 
@@ -160,7 +165,7 @@ const appleIcon = await getImage({src: icon, width: 180, format: "png"})
 
         Alpine.start()
       } else {
-        ot.toast("Cannot load assets", "", {variant: "danger"})
+        ot.toast("Cannot load assets. Please make a new issue if you see this error.", "Load Error", {variant: "danger"})
       }
 
     </script>

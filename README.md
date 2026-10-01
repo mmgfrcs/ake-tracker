@@ -35,9 +35,9 @@ To upload your pulls, you need to grab your pulls from the Arknights: Endfield s
 You can download the script from the repo, right-click on it and click Run with PowerShell &gt; Open (if you're on Windows), or run the following command on the PowerShell terminal:
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/mmgfrcs/ake-tracker/19a21ea3ae83b2bea035ca1111127eda09062eb9/get-record.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/mmgfrcs/ake-tracker/8886b657ac569ece1a1806eee0b5730762f3721c/get-record.ps1 | iex
 ```
-> Pinned to commit 19a21ea3ae83b2bea035ca1111127eda09062eb9 (Fix Empty Pool Types from the API) as of writing this README file
+> Pinned to commit 8886b657ac569ece1a1806eee0b5730762f3721c (Add Rerun Banner Handling to Script) as of writing this README file
 
 > [!WARNING]
 > Make sure the URL you use in the command is *pinned* to a commit like the above example
