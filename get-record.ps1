@@ -37,7 +37,12 @@ function Get-AKERecords {
     $pools = @('weap123')
   } else {
     $uriBuilder = [System.UriBuilder]"https://ef-webview.gryphline.com/api/record/char"
-    $pools = @('E_CharacterGachaPoolType_Standard', 'E_CharacterGachaPoolType_Beginner', 'E_CharacterGachaPoolType_Special', 'E_CharacterGachaPoolType_Joint')
+    $pools = @(
+      'E_CharacterGachaPoolType_Standard', 
+      'E_CharacterGachaPoolType_Beginner', 
+      'E_CharacterGachaPoolType_Special', 
+      'E_CharacterGachaPoolType_Joint',
+      'E_CharacterGachaPoolType_Rerun')
   }
 
   foreach ($pl in $pools) {
