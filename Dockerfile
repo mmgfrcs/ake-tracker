@@ -8,7 +8,7 @@ WORKDIR /app
 
 FROM base AS build
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN echo $APPVER | sed -E 's/^([0-9]+\.[0-9]+)\.?[0-9]*-([0-9]+)/\1\.\2/; s/\-g([0-9a-f]+)/\-pre.\1/; s/^/VITE_APP_VERSION=/' >> ./.env && \
+RUN echo $APPVER | sed -E 's/^([0-9]+\.[0-9]+)\.?[0-9]*-([0-9]+)/\1\.\2/; s/\-g([0-9a-f]+)/\-pre.\1/; s/^/PUBLIC_APP_VERSION=/' >> ./.env && \
     pnpm build && cp docs/* ./dist
 
 FROM pierrezemb/gostatic
