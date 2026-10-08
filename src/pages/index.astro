@@ -7,7 +7,7 @@ import PersistenceDialog from "../components/dialogs/persistence.astro"
 import RefreshDialog from "../components/dialogs/refresh.astro"
 import ExportDialog from "../components/dialogs/export.astro"
 import NotusDialog from "../components/dialogs/notus.astro"
-import bg from "../assets/bg.webp"
+import bg from "../assets/bg.png"
 import NewPullSection from "../components/sections/new-pulls.astro"
 import PullStatSection from "../components/sections/pull-stats.astro"
 import {getImage, Image} from "astro:assets"
@@ -63,7 +63,7 @@ const appleIcon = await getImage({src: icon, width: 180, format: "png"})
   <body x-data="{glass: true}" x-init="glass = !localStorage.getItem('pref-glass') || localStorage.getItem('pref-glass') === 'true'" x-effect="localStorage.setItem('pref-glass', glass)">
     <div id="assetscoll" data-assets={JSON.stringify(optimizedAssetMod)}></div>
     <div id="bg-image" x-cloak>
-      <Image src={bg} x-show="glass" x-transition.duration.500ms.opacity="" x-transition:enter-end="opacity-20" x-transition:leave-start="opacity-20" alt="" />
+      <Image src={bg} widths={[3840, 1920, 1080, 720, 320]} x-show="glass" x-transition.duration.500ms.opacity="" x-transition:enter-end="opacity-20" x-transition:leave-start="opacity-20" alt="" />
     </div>
     <header class="flex items-center gap-2 p-4">
       <Image src={icon} class="icon" alt="" width="64" height="64" />

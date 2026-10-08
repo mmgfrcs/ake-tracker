@@ -82,6 +82,38 @@ function escapeHTML(str) {
   return str.replace(/\&|\<|\>|\'|\"/g, (/** @type {string} */ tag) => entities[tag] || tag);
 };
 
+/**
+ * @param {string} srcset
+ * @param {(url: string) => string} transform
+ */
+function mapSrcsetUrls(srcset, transform) {
+  const candidates = [];
+  let position = 0;
+
+  while (position < srcset.length) {
+    while (position < srcset.length && /[\s,]/.test(srcset[position])) position++;
+    if (position >= srcset.length) break;
+
+    const urlStart = position;
+    while (position < srcset.length && !/\s/.test(srcset[position])) position++;
+    let url = srcset.slice(urlStart, position);
+    const trailingCommas = url.match(/,+$/)?.[0] ?? "";
+    if (trailingCommas) url = url.slice(0, -trailingCommas.length);
+
+    let descriptor = "";
+    if (!trailingCommas) {
+      const descriptorStart = position;
+      while (position < srcset.length && srcset[position] !== ",") position++;
+      descriptor = srcset.slice(descriptorStart, position).trim();
+    }
+
+    candidates.push(`${transform(url)}${descriptor ? ` ${descriptor}` : ""}`);
+    if (position < srcset.length && srcset[position] === ",") position++;
+  }
+
+  return candidates.join(", ");
+}
+
 
 // https://astro.build/config
 export default defineConfig({
@@ -91,7 +123,9 @@ export default defineConfig({
   build: {
     inlineStylesheets: "always",
   },
-
+  image: {
+    domains: ["openinary-aketracker.fly.dev"],
+  },
   base,
   integrations: [
     alpinejs({entrypoint: "/src/alpine"}), 
@@ -109,19 +143,29 @@ export default defineConfig({
           let html = fs.readFileSync(htmlFile, "utf-8");
           const assets = new Set()
 
-          // Inline <img src="..."> tags
-          html = html.replace(/(<img\s[^>]*src=")([^"]+)(")/g, (match, pre, src, post) => {
-            if (src.startsWith("data:") || src.startsWith("http")) return match;
+          const inlineImage = (src) => {
+            if (src.startsWith("data:") || src.startsWith("http")) return src;
             const assetPath = resolveOutputAsset(src, outDir);
-            if (!fs.existsSync(assetPath)) return match;
+            if (!fs.existsSync(assetPath)) return src;
             const ext = path.extname(assetPath).slice(1).toLowerCase();
             const mime = mimeType(ext);
-            if (!mime) return match;
+            if (!mime) return src;
             const b64 = fs.readFileSync(assetPath).toString("base64");
             logger.info(`Inlining image: ${src}`);
             assets.add(assetPath)
-            return `${pre}data:${mime};base64,${b64}${post}`;
+            return `data:${mime};base64,${b64}`;
+          };
+
+          // Inline <img src="..."> tags
+          html = html.replace(/(<img\s[^>]*src=")([^"]+)(")/g, (match, pre, src, post) => {
+            return `${pre}${inlineImage(src)}${post}`;
           });
+
+          // Inline local image candidates in <img srcset="..."> attributes
+          html = html.replace(/<img\b[^>]*>/gi, (tag) => tag.replace(/(\bsrcset\s*=\s*)(["'])(.*?)\2/i, (match, prefix, quote, srcset) => {
+            const inlinedSrcset = mapSrcsetUrls(srcset, inlineImage);
+            return `${prefix}${quote}${inlinedSrcset}${quote}`;
+          }));
 
           // Inline icon assets referenced by <link> tags
           html = html.replace(/<link\b[^>]*>/gi, (tag) => {

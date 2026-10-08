@@ -1,5 +1,65 @@
 [
   {
+    "version": "1.6-1",
+    "pool_gacha_type": "char",
+    "name": "Rejuvenation",
+    "type": "special",
+    "up_name": "Si",
+    "image": "161.webp",
+    "start_date": 1760304000,
+    "end_date": 1762415999
+  },
+  {
+    "version": "1.6-1",
+    "pool_gacha_type": "weapon",
+    "name": "Seal of Jade Issue",
+    "type": "weapon",
+    "up_name": "Jade Vessel",
+    "image": "161w.webp",
+    "start_date": 1760304000,
+    "end_date": 1762415999
+  },
+  {
+    "version": "1.6-2",
+    "pool_gacha_type": "char",
+    "name": "Ancestral Spring Flows Anew",
+    "type": "rerun",
+    "up_name": "Tangtang",
+    "image": "162.webp",
+    "start_date": 1764403200,
+    "end_date": 1766217599
+  },
+  {
+    "version": "1.6-2",
+    "pool_gacha_type": "weapon",
+    "name": "Tender Sprig Issue",
+    "type": "weapon",
+    "up_name": "Brigand's Calling",
+    "image": "162w.webp",
+    "start_date": 1764403200,
+    "end_date": 1766217599
+  },
+  {
+    "version": "1.6-3",
+    "pool_gacha_type": "char",
+    "name": "The Hearth Fire Beckons the Starry Flow",
+    "type": "special",
+    "up_name": "Argent Flow",
+    "image": "163.webp",
+    "start_date": 1766726400,
+    "end_date": 1769401599
+  },
+  {
+    "version": "1.6-3",
+    "pool_gacha_type": "weapon",
+    "name": "Moongleam Issue",
+    "type": "weapon",
+    "up_name": "Lunar Calling",
+    "image": "163w.webp",
+    "start_date": 1766726400,
+    "end_date": 1769401599
+  },
+  {
     "version": "1.5-1",
     "pool_gacha_type": "char",
     "name": "Winter Hunt",
