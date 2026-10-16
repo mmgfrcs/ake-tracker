@@ -133,20 +133,20 @@ const { type } = Astro.props
                     x-on:resize.debounce.100.window="compact = window.innerWidth < 720" x-data="{compact: window.innerWidth < 720}">
               <span class="w-6" x-text={`pulls.${type}s[pool].length - pulls.${type}s[pool].indexOf(char)`}>150</span>
               <span class="w-30 flex items-center gap-1" x-show="!compact">
-              <template x-for="i in char.rarity">
-                <Star width="16" height="16" fill="currentColor" />
-              </template>
-            </span>
+                <template x-for="i in char.rarity">
+                  <Star width="16" height="16" fill="currentColor" />
+                </template>
+              </span>
               <span class="flex items-center gap-1" x-show="compact">
-              <Star width="16" height="16" fill="currentColor" />
-              x<span x-text="char.rarity"></span>
-            </span>
+                <Star width="16" height="16" fill="currentColor" />
+                x<span x-text="char.rarity"></span>
+              </span>
               <img loading="lazy" class="icon" x-bind:src="await getIcon(char)" x-bind:alt="char.name + ' Icon'" />
-              <span class="flex-1">
-              <span x-text="char.name + ' '">Example Name</span>
-              <span class="text-lighter text-sm" x-text="char.poolName" x-show="!compact">Example Name</span>
-              <span class="badge" x-show="char.isFree">FREE</span>
-            </span>
+              <span class="flex flex-1 gap-2 items-center">
+                <span x-text="char.name">Example Name</span>
+                <span class="text-lighter text-sm" x-text="char.poolName" x-show="!compact">Example Name</span>
+                <span class="badge" x-show="char.isFree">FREE</span>
+              </span>
               <span x-text="new Date(Number(char.pulledAt)).toLocaleString('en-GB')">Example Name</span>
             </article>
           </template>

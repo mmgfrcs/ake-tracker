@@ -22,7 +22,7 @@ export default (Alpine: Alpine) => {
 
   Alpine.data("meta", () => ({
     appVer: import.meta.env.PUBLIC_APP_VERSION,
-    gameVer: "1.5",
+    gameVer: "1.6",
   }))
 
   Alpine.data("exporter", () => ({
@@ -743,10 +743,12 @@ function calculate5050WinOdds(data: Partial<Record<string, AKECharacterHistory[]
       .filter(([poolId]) => !excludedPools.has(poolId.toLowerCase()))
       .flatMap(([, characters]) => characters?.filter(char => char.rarity === 6) ?? []);
 
+  if(sixStarChars.length === 0) return 0
+
   return sixStarChars.reduce((p, n) => {
     if (excludedCharacters.has(n.id)) return p
     const nextChar = sixStarChars.find((_, i)=>i > sixStarChars.indexOf(n))
-    if(!nextChar) return p
+    if(!nextChar) return !excludedCharacters.has(n.id) ? ++p : p
     return !excludedCharacters.has(nextChar.id) ? ++p : p
   }, 0) / sixStarChars.length * 100
 }
