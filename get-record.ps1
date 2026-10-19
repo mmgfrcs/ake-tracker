@@ -64,29 +64,37 @@ function Get-AKERecords {
       foreach ($key in $reqQuery.Keys) {
         $sq.Add($key, $reqQuery.$key)
       }
+      
       $uriBuilder.Query = $sq.ToString()
       $resp = Invoke-WebRequest -Uri $uriBuilder.Uri.OriginalString -UserAgent "Mozilla/5.0" -UseBasicParsing
       $respJson = $resp | ConvertFrom-Json
 
+      if ([int]$respJson.code -ne 0) {
+        throw "Server returned error: $($respJson.msg)"
+        break
+      }
+
       $seq = [int]$respJson.data.list[-1].seqId
+      $firstSeq = [int]$respJson.data.list[0].seqId
 
       # Skip when seqId lower than target
-      if ($seq -ne 0 -and $seq -le $TargetSeqId) {
+      if ($seq -ne 0 -and $firstSeq -le $TargetSeqId) {
         if ($Type -eq 0) {
-          Write-Host "    Seq $seq (SKIP)" -ForegroundColor Red
+          Write-Host "    Seq $firstSeq (SKIP)" -ForegroundColor Red
         } else {
-          Write-Host "    Seq $seq pool $pl (SKIP)" -ForegroundColor Red
+          Write-Host "    Seq $firstSeq pool $pl (SKIP)" -ForegroundColor Red
         }
         break;
       }
 
       if ($Type -eq 0) {
-        Write-Host "    Seq $seq"
+        Write-Host "    Seq $firstSeq"
       } else {
-        Write-Host "    Seq $seq pool $pl"
+        Write-Host "    Seq $firstSeq pool $pl"
       }
       
-      $rdata += $respJson.data.list
+      $newRecords = @($respJson.data.list | Where-Object { [int]$_.seqId -gt $TargetSeqId })
+      $rdata += $newRecords
 
       if (-not $respJson.data.hasMore) {
         break
@@ -132,53 +140,62 @@ foreach ($line in $lines) {
     continue
   }
 
-  $fullUrl = $match.Value
-  Write-Host "`nURL Found:" -ForegroundColor Green
-  Write-Host $fullUrl
+  try {
+    $fullUrl = $match.Value
+    Write-Host "`nTrying URL:" -ForegroundColor Green
+    Write-Host $fullUrl
 
-  # Get query string
-  $uri = [System.Uri]$fullUrl
-  $queryString = $uri.Query.TrimStart('?')
-  $params = [System.Web.HttpUtility]::ParseQueryString($queryString)
+    # Get query string
+    $uri = [System.Uri]$fullUrl
+    $queryString = $uri.Query.TrimStart('?')
+    $params = [System.Web.HttpUtility]::ParseQueryString($queryString)
 
-  $data = @{
-    'weapons'     = @()
-    'characters'  = @()
-  }
+    $data = @{
+      'weapons'     = @()
+      'characters'  = @()
+    }
 
-  $recFile = "./akerecord.json"
+    $recFile = "./akerecord.json"
 
-  # Try loading existing akerecord.json to do partial update
-  if (-not (Test-Path -Path $recFile)) {
-      $highestCharSeqId = 0
-      $highestWeaponSeqId = 0
-      $jsonData = @{
-        'weapons'      = @()
-        'characters'  = @()
-      }
-      Write-Host "Existing akerecord.json file not found. Starting from scratch." -ForegroundColor Yellow
-  } else {
-    $jsonContent = Get-Content -Path $recFile -Raw
-    $jsonData = $jsonContent | ConvertFrom-Json
-
-    $highestCharSeqId = ($jsonData.characters | ForEach-Object { [int]$_.seqId } | Measure-Object -Maximum).Maximum
-    if (-not $highestCharSeqId) {
+    # Try loading existing akerecord.json to do partial update
+    if (-not (Test-Path -Path $recFile)) {
         $highestCharSeqId = 0
-    }
-
-    $highestWeaponSeqId = ($jsonData.weapons | ForEach-Object { [int]$_.seqId } | Measure-Object -Maximum).Maximum
-    if (-not $highestWeaponSeqId) {
         $highestWeaponSeqId = 0
+        $jsonData = @{
+          'weapons'      = @()
+          'characters'  = @()
+        }
+        Write-Host "Existing akerecord.json file not found. Starting from scratch." -ForegroundColor Yellow
+    } else {
+      $jsonContent = Get-Content -Path $recFile -Raw
+      $jsonData = $jsonContent | ConvertFrom-Json
+
+      $highestCharSeqId = ($jsonData.characters | ForEach-Object { [int]$_.seqId } | Measure-Object -Maximum).Maximum
+      if (-not $highestCharSeqId) {
+          $highestCharSeqId = 0
+      }
+
+      $highestWeaponSeqId = ($jsonData.weapons | ForEach-Object { [int]$_.seqId } | Measure-Object -Maximum).Maximum
+      if (-not $highestWeaponSeqId) {
+          $highestWeaponSeqId = 0
+      }
+
+      Write-Host "Existing akerecord.json file found. Grabbing character records newer than seqId $highestCharSeqId and weapon records newer than seqId $highestWeaponSeqId." -ForegroundColor Green
     }
 
-    Write-Host "Existing akerecord.json file found. Grabbing character records newer than seqId $highestCharSeqId and weapon records newer than seqId $highestWeaponSeqId." -ForegroundColor Green
+    # Get token and server from query string
+    $data.weapons = Get-AKERecords -Type Weapon -Token $params["token"] -ServerID $params["server_id"] -TargetSeqId $highestWeaponSeqId | Where-Object { $_.kind -eq "draw" }
+    $data.characters = Get-AKERecords -Type Character -Token $params["token"] -ServerID $params["server_id"] -TargetSeqId $highestCharSeqId | Where-Object { $_.kind -eq "draw" }
+    $data.weapons += $jsonData.weapons
+    $data.characters += $jsonData.characters
+
+  } catch {
+    Write-Host "An error occurred when trying to grab records: $_" -ForegroundColor Red
+    Write-Host "  $($_.ScriptStackTrace.Split([Environment]::NewLine, [System.StringSplitOptions]::RemoveEmptyEntries) -join "$([Environment]::NewLine)  ")" -ForegroundColor Red
+    Write-Host "Retrying other URLs" -ForegroundColor Red
+    continue
   }
 
-  # Get token and server from query string
-  $data.weapons = Get-AKERecords -Type Weapon -Token $params["token"] -ServerID $params["server_id"] -TargetSeqId $highestWeaponSeqId
-  $data.characters = Get-AKERecords -Type Character -Token $params["token"] -ServerID $params["server_id"] -TargetSeqId $highestCharSeqId
-  $data.weapons += $jsonData.weapons
-  $data.characters += $jsonData.characters
   [System.IO.File]::WriteAllText("./akerecord.json", ($data | ConvertTo-Json -Compress), [System.Text.Encoding]::UTF8)
 
   Write-Host "`nDone! Record saved to $($PWD.Path + "/akerecord.json")" -ForegroundColor Green
@@ -188,5 +205,5 @@ foreach ($line in $lines) {
 }
 
 if (-not $found) {
-  Write-Host "`nNo URL found. Make sure that you have opened the in-game pull history at least once today." -ForegroundColor Red
+  Write-Host "`nNo more valid URLs found. Make sure that you have opened the in-game pull history at least once today." -ForegroundColor Red
 }
