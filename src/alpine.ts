@@ -716,7 +716,6 @@ function calculateCurrentPity(data: (AKECharacterHistory|AKEWeaponHistory)[], ba
 
   let last6StarIdx = sortedPulls.findIndex(x=>x.rarity === 6)
   if(last6StarIdx === -1) last6StarIdx = sortedPulls.length;
-  console.log(banner, sortedPulls)
   last6StarIdx -= sortedPulls.slice(0, last6StarIdx).filter(x=>("isFree" in x) && x.isFree).length
   return last6StarIdx
 }
